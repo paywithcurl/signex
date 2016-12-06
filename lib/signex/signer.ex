@@ -23,14 +23,4 @@ defmodule SignEx.Signer do
     |> :public_key.encrypt_private(decode_key(key))
     |> Base.encode64
   end
-
-  defmacro __using__(_) do
-    quote do
-      alias SignEx.Signer
-
-      def sign(message, private_key) do
-        Signer.sign(message, private_key)
-      end
-    end
-  end
 end

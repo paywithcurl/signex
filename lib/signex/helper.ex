@@ -1,4 +1,12 @@
 defmodule SignEx.Helper do
+
+  def signature_params(signature) do
+    Regex.replace(~r/^Signature /, signature, "")
+    |> String.split(",")
+    |> Enum.map(fn(attr) -> Regex.split(~r/=/, attr, [parts: 2]) end)
+    |> Enum.reduce(%{}, fn([key, value], result) -> Map.put(result, String.trim(key), value) end)
+  end
+
   def hash_message(message, salt) do
     :crypto.hash(:sha512, message <> salt)
   end
