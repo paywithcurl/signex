@@ -42,7 +42,15 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "takes signature and return error when signature doesn't match" do
-      assert {:error, _} = SignEx.verify("blah", @test_signature, @public_key)
+      assert {:error, "Message doesn't match signature"} = SignEx.verify("blah", @test_signature, @public_key)
+    end
+
+    test "return error when invalid signature" do
+      assert {:error, "invalid signature"} = SignEx.verify(@message_str, nil, @public_key)
+    end
+
+    test "return error when invalid key" do
+      assert {:error, "invalid public key"} = SignEx.verify(@message_str, @test_signature, nil)
     end
   end
 
