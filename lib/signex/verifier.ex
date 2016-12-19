@@ -10,21 +10,17 @@ defmodule SignEx.Verifier do
   end
 
   defp verify_with_atttributes(message, attrs, public_key) do
-
-    case original_digest(attrs["signature"], public_key) do
+    case original_digest(hash_message(message, attrs["salt"]), attrs["signature"], public_key) do
+      true -> :ok
       {:error, reason} -> {:error, reason}
-      digest ->
-        case hash_message(message, attrs["salt"]) == digest do
-          true -> :ok
-          false -> {:error, "Message doesn't match signature"}
-        end
+      _ -> {:error, "Message doesn't match signature"}
     end
   end
 
-  defp original_digest(signature, public_key) do
+  defp original_digest(message, signature, public_key) do
     try do
       {:ok, encrypted_digest} = Base.decode64(signature)
-      :public_key.decrypt_public(encrypted_digest, decode_key(public_key))
+      :public_key.verify(message, :sha512, encrypted_digest, decode_key(public_key))
     rescue
       _ -> {:error, "invalid public key"}
     catch
