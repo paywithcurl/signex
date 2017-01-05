@@ -9,6 +9,34 @@ defmodule SignEx.HTTP do
   """
   @default_headers [:date]
 
+  def lock(headers, keypair, opts \\ []) do
+    {:ok, message} = signature_string(headers, opts)
+    {:ok, signature} = sign_message(message, keypair)
+    header = %{
+      keyId: keypair.id,
+      algorith: keypair.algorithm,
+      headers: opts.headers,
+      signature: signature
+    }
+  end
+  def lock(headers, body, keypair, opts) do
+    {:ok, digest} = digest(body)
+    lock(headers ++ [{"digest", digest}], keypair, opts)
+  end
+
+  def sign_message(message, keypair) do
+    # use the existing signer
+  end
+
+  def verify_signature(headers, key) do
+
+  end
+
+  def digest(body) do
+
+  end
+
+  # Any enum with tuple pairs should work.
   def signature_string(headers, opts \\ []) when is_list(headers) do
     signed_headers = Keyword.get(opts, :headers, @default_headers)
     if [] == signed_headers do
