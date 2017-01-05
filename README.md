@@ -30,29 +30,45 @@ Signing a request consists of two steps
 - Generating a digest of the body content
 - Signing the request headers.
 
-would be nice to have a different word for combination.
+
+```elixir
+{:ok, digest_header} = SignEx.HTTP.digest_header_for(body)
+headers = headers ++ [{"digest", digest_header}]
+
+{:ok, signature_header} = SignEx.HTTP.signature_header_for(headers, keypair)
+headers = headers ++ [{"signature", signature_header}]
+```
+
+As long as the digest headers is one of the signed headers then the whole request is secured.
+SignEx will have to make assumptions about the request format OR have adapters for plug/httpoison etc if we are to have a single call that does all the locking a request.
+Would be nice to have a different word for the combination of actions other than sign.
 e.g. lock, fossilise!, bond(glue), hallmark, stamp, seal
 
 ```elixir
-HTTP.sign(headers, key, headers: [:path, :date])
-HTTP.sign(%{headers: headers}, key)
+{:ok, request} = SignEx.HTTP.seal(request, keypair, headers: [:path, :date])
 ```
 
-on server
+On server
+
+This is example code that would make no assumptions about the format of the request,
+hence leaving signex as agnostic as possible
 ```elixir
-{:ok, _} = SignEx.HTTP.key_id()
-{:ok, _} = SignEx.HTTP.check_plug(conn, public_key)
+signature = Plug.Conn.get_req_header(conn, "signature")
+{:ok, signature} = SignEx.HTTP.parse_signature(signature)
+{:ok, public_key} = lookup_public_key(signature.key_id)
+headers = conn.req_headers
+signed_headers = SignEx.HTTP.fetch_signed_headers(headers, signature.headers)
+SignEx.HTTP.verify_signed_headers(signed_headers, public_key)
 
-# OR
-
-seal = HTTP.seal_from_plug()
-headers = HTTP.headers ++ request-target
-
+digest_header = Plug.Conn.get_req_header(conn, "digest")
+SignEx.HTTP.check_digest_header(digest_header, conn.body)
 ```
-might want to call these modules SignEx.Plug.*
+
+Because of the complexity in the above I thing it would be best if SignEx was packaged with plugs. `SignEx.Plug.Digest`, `SignEx.Plug.Signature`
 
 I think that the header keys should be downcased.
 Makes is explicit and HTTP/2 specifies downcased headers.
+plug also downcases them
 
 ## How test keys were generated
 
