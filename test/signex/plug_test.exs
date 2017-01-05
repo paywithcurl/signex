@@ -41,14 +41,10 @@ defmodule SignEx.PlugTest do
       {"host", "example.com"},
       {"digest", digest}
     ], headers: [:host, :digest])
-    |> IO.inspect
 
     signature = SignEx.Signer.sign_message(signature_content, private_key)
     :public_key.verify(signature_content, :sha512, signature, SignEx.Helper.decode_key(public_key))
-    |> IO.inspect
-    IO.inspect(signature)
     "signature" <> "auth params"
-    |> IO.inspect
     key_id = "myid"
     authorization = "Signature key_id=\"#{key_id}\",algorithm=\"rsa-sha256\",headers=\"host digest\",signature=\"#{Base.encode64(signature)}\""
 

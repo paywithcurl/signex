@@ -17,8 +17,6 @@ defmodule Plug.SignEx do
         |> Enum.map(fn(host) -> List.keyfind(conn.req_headers, host, 0) end)
         |> Enum.map(fn({k, v}) -> "#{k}: #{v}" end)
         |> Enum.join("\r\n")
-        |> IO.inspect
-
 
         checked = :public_key.verify(message, :sha512, signature, SignEx.Helper.decode_key(public_key))
         case checked do
@@ -27,7 +25,8 @@ defmodule Plug.SignEx do
         # TODO signature doesn't check
         end
       _ ->
-        IO.inspect("nope")
+        conn
+        |> halt
     end
     digest = Plug.Conn.get_req_header(conn, "digest") |> List.first
     case digest do
