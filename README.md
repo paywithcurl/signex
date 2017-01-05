@@ -1,6 +1,26 @@
 # signex
 Sign messages with private key
 
+## Usage
+
+### To sign
+
+```elixir
+private_key = # read private key
+public_key = # read public key
+{:ok, signature, signed_message} = SignEx.sign("my message", private_key, public_key)
+```
+
+### To verify
+
+```elixir
+public_key = # read public key
+case SignEx.verify("my message", signature, public_key) do
+    :ok -> # success
+    {:error, reason} -> # failure
+end
+```
+
 ## SignEx.HTTP
 
 For securing HTTP requests.
