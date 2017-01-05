@@ -29,7 +29,7 @@ defmodule SignEx.Signer do
     |> Base.encode64
   end
 
-  defp sign_message(message, private_key) do
+  def sign_message(message, private_key) do
     :public_key.sign(message, :sha512, decoded_pem_entry(private_key))
   end
 

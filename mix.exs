@@ -19,6 +19,9 @@ defmodule SignEx.Mixfile do
   defp elixirc_paths(_),     do: ["lib"]
 
   defp deps do
-    [{:poison, "~> 2.0"},]
+    [
+      {:poison, "~> 2.0"},
+      {:plug, "~> 1.0", only: :test}
+    ]
   end
 end
