@@ -29,4 +29,10 @@ defmodule SignEx.HTTPTest do
   end
 
   # TODO consider handling path as a psudo header {"path", "get /foo"} {"(request-target)"}, "get /foo"
+
+  test "walk through digest" do
+    digest_header = SignEx.HTTP.digest_header_for("Hello")
+    assert true == SignEx.HTTP.check_digest_header(digest_header, "Hello")
+    assert false == SignEx.HTTP.check_digest_header(digest_header, "Other")
+  end
 end

@@ -19,10 +19,10 @@ defmodule SignEx.HTTP do
       signature: signature
     }
   end
-  def lock(headers, body, keypair, opts) do
-    {:ok, digest} = digest(body)
-    lock(headers ++ [{"digest", digest}], keypair, opts)
-  end
+  # def lock(headers, body, keypair, opts) do
+  #   {:ok, digest} = digest(body)
+  #   lock(headers ++ [{"digest", digest}], keypair, opts)
+  # end
 
   def sign_message(message, keypair) do
     # use the existing signer
@@ -32,8 +32,16 @@ defmodule SignEx.HTTP do
 
   end
 
-  def digest(body) do
+  def check_digest_header("SHA-256=" <> digest, message) do
+    digest == digest_content(message)
+  end
 
+  def digest_header_for(body) do
+    "SHA-256=" <> digest_content(body)
+  end
+
+  def digest_content(body) do
+    :crypto.hash(:sha256, body)
   end
 
   # Any enum with tuple pairs should work.

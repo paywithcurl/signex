@@ -45,3 +45,8 @@ Makes is explicit and HTTP/2 specifies downcased headers.
 
 * `openssl genrsa -out private_key.pem 2048`
 * `openssl rsa -in private_key.pem -pubout > public_key.pem`
+
+### Notes
+
+- Hashes and Digests refer to the same process.
+  A hash function produces a digest. hash function == digest algorithm
