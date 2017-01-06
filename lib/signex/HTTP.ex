@@ -38,6 +38,11 @@ defmodule SignEx.HTTP do
     |> Enum.join("\n")
   end
 
+  @doc """
+  Create a signature header string for a list of headers
+
+  Will sign all headers passed in but has no knowledge of path psudo header.
+  """
   def signature_header_for(headers, keypair) do
     signing_string = SignEx.HTTP.compose_signing_string(headers)
     signature = SignEx.Signer.sign_message(signing_string, keypair.private_key) |> Base.encode64
@@ -51,20 +56,21 @@ defmodule SignEx.HTTP do
     "Signature " <> parameters_string
   end
 
-  # Any enum with tuple pairs should work.
-  def signature_string(headers, opts \\ []) when is_list(headers) do
-    signed_headers = Keyword.get(opts, :headers, @default_headers)
-    if [] == signed_headers do
-      {:error, :no_headers_specified}
-    else
-      fetch_signed_headers(signed_headers, headers)
-      case fetch_signed_headers(signed_headers, headers) do
-        {:ok, headers} ->
-          {:ok, compose_signing_string(headers)}
-        {:error, reason} ->
-          {:error, reason}
-      end
-    end
+  @parameters_pattern ~r/^key_id="(?<key_id>[^"]*)",algorithm="(?<algorithm>[^"]*)",headers="(?<headers>[^"]*)",signature="(?<signature>[^"]*)"$/
+
+  def parse_parameters(str) do
+    %{
+      "key_id" => key_id,
+      "algorithm" => algorithm,
+      "headers" => headers,
+      "signature" => signature,
+    } = Regex.named_captures(@parameters_pattern, str)
+    {:ok, %SignEx.Parameters{
+      key_id: key_id,
+      algorithm: algorithm,
+      headers: headers |> String.split(" "),
+      signature: signature
+      }}
   end
 
   def fetch_signed_headers(signed_headers, headers) do

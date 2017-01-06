@@ -33,7 +33,7 @@ defmodule Plug.SignEx do
   def call(conn, public_key) do
     case Plug.Conn.get_req_header(conn, "authorization") |> List.first do
       "Signature " <> signature ->
-        {:ok, %{signature: signature, headers: headers}} = SignEx.Parameters.parse(signature)
+        {:ok, %{signature: signature, headers: headers}} = SignEx.HTTP.parse_parameters(signature)
         {:ok, signature} = Base.decode64(signature)
         message = headers
         |> Enum.map(fn(host) -> List.keyfind(conn.req_headers, host, 0) end)
