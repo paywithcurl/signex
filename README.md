@@ -1,35 +1,34 @@
 # signex
-Sign messages with private key
+Secure messages through digests and signing.
+
+SignEx can work with any message which has:
+- content that can be represented as a binary, such as an HTML body.
+- metadata that can be represented as a map, such as HTML headers.
+
+Signing a message consists of two steps
+
+- Generating a digest of the content
+- Signing the message metadata which includes the content digest.
+
 
 ## Usage
 
-### To sign
+### Verifying generic messages
 
 ```elixir
-private_key = # read private key
-public_key = # read public key
-{:ok, signature, signed_message} = SignEx.sign("my message", private_key, public_key)
+:ok = SignEx.verify_signature(metadata, signature_params, keystore)
+:ok = SignEx.verify_digest(body, digest)
+
+# Or combined
+# will assume that there is a "digest" key in the meta data that is used to confirm the request
+:ok = SignEx.verify(body, metadata, signature_params, keystore)
 ```
 
-### To verify
-
-```elixir
-public_key = # read public key
-case SignEx.verify("my message", signature, public_key) do
-    :ok -> # success
-    {:error, reason} -> # failure
-end
-```
+Signing messages is easiest to achieve using the specific transport implementation
 
 ## SignEx.HTTP
 
 For securing HTTP requests.
-
-Signing a request consists of two steps
-
-- Generating a digest of the body content
-- Signing the request headers.
-
 
 ```elixir
 {:ok, digest_header} = SignEx.HTTP.digest_header_for(body)
@@ -39,32 +38,11 @@ headers = headers ++ [{"digest", digest_header}]
 headers = headers ++ [{"signature", signature_header}]
 ```
 
-As long as the digest headers is one of the signed headers then the whole request is secured.
-SignEx will have to make assumptions about the request format OR have adapters for plug/httpoison etc if we are to have a single call that does all the locking a request.
 Would be nice to have a different word for the combination of actions other than sign.
 e.g. lock, fossilise!, bond(glue), hallmark, stamp, seal
 
-```elixir
-{:ok, request} = SignEx.HTTP.seal(request, keypair, headers: [:path, :date])
-```
-
-On server
-
-This is example code that would make no assumptions about the format of the request,
-hence leaving signex as agnostic as possible
-```elixir
-signature = Plug.Conn.get_req_header(conn, "signature")
-{:ok, signature} = SignEx.HTTP.parse_signature(signature)
-{:ok, public_key} = lookup_public_key(signature.key_id)
-headers = conn.req_headers
-signed_headers = SignEx.HTTP.fetch_signed_headers(headers, signature.headers)
-SignEx.HTTP.verify_signed_headers(signed_headers, public_key)
-
-digest_header = Plug.Conn.get_req_header(conn, "digest")
-SignEx.HTTP.check_digest_header(digest_header, conn.body)
-```
-
-Because of the complexity in the above I thing it would be best if SignEx was packaged with plugs. `SignEx.Plug.Digest`, `SignEx.Plug.Signature`
+TODO: handle path psudo header
+TODO: Keystore lookup
 
 I think that the header keys should be downcased.
 Makes is explicit and HTTP/2 specifies downcased headers.

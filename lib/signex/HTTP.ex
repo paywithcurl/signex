@@ -61,7 +61,7 @@ defmodule SignEx.HTTP do
   def parse_parameters(str) do
     %{
       "key_id" => key_id,
-      "algorithm" => algorithm,
+      "algorithm" => algorithm = "rsa-sha256", # assume this signature so we can assume signature needs base64 decoding
       "headers" => headers,
       "signature" => signature,
     } = Regex.named_captures(@parameters_pattern, str)
