@@ -4,6 +4,18 @@ defmodule Mel.InvoiceApprovedConsumerTest do
   @message %{b: 2, a: 1, c: %{d: "fiz", e: nil}}
   @message_str Poison.encode!(@message)
 
+  test "checking digest for some content" do
+    header = SignEx.generate_digest("hello")
+    assert SignEx.digest_valid?("hello", header)
+    refute SignEx.digest_valid?("other", header)
+  end
+
+  test "checking digest for no content" do
+    header = SignEx.generate_digest("")
+    assert SignEx.digest_valid?("", header)
+    refute SignEx.digest_valid?("other", header)
+  end
+
   describe "#sign with rsa keys" do
     setup do
       private_key = File.read!(Path.expand("../keys/private_key.pem", __ENV__.file))

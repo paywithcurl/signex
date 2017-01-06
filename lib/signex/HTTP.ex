@@ -17,26 +17,6 @@ defmodule SignEx.HTTP do
       # iex> signature_string([{"date", "Tue, 07 Jun 2014 20:51:35 GMT"}])
       # "date: Tue, 07 Jun 2014 20:51:35 GMT"
   """
-  @default_headers [:date]
-
-  def digest_header_for(body) do
-    "SHA-256=" <> Base.encode64(digest_content(body))
-  end
-
-  def digest_content(body) do
-    :crypto.hash(:sha256, body)
-  end
-
-  def check_digest_header("SHA-256=" <> digest, message) do
-    {:ok, digest} = Base.decode64(digest)
-    digest == digest_content(message)
-  end
-
-  def compose_signing_string(headers) do
-    headers
-    |> Enum.map(fn({k, v}) -> "#{k}: #{v}" end)
-    |> Enum.join("\n")
-  end
 
   @doc """
   Create a signature header string for a list of headers
@@ -44,7 +24,7 @@ defmodule SignEx.HTTP do
   Will sign all headers passed in but has no knowledge of path psudo header.
   """
   def signature_header_for(headers, keypair) do
-    signing_string = SignEx.HTTP.compose_signing_string(headers)
+    signing_string = SignEx.Helper.compose_signing_string(headers)
     signature = SignEx.Signer.sign_message(signing_string, keypair.private_key) |> Base.encode64
     parameters = %SignEx.Parameters{
       key_id: "my-id",

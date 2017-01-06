@@ -31,7 +31,7 @@ Signing messages is easiest to achieve using the specific transport implementati
 For securing HTTP requests.
 
 ```elixir
-{:ok, digest_header} = SignEx.HTTP.digest_header_for(body)
+{:ok, digest_header} = SignEx.generate_digest(body)
 headers = headers ++ [{"digest", digest_header}]
 
 {:ok, signature_header} = SignEx.HTTP.signature_header_for(headers, keypair)

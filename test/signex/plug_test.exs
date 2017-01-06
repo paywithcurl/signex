@@ -37,7 +37,7 @@ defmodule SignEx.PlugTest do
     body = "Hello"
     headers = [{"host", "example.com"}]
 
-    digest_header = SignEx.HTTP.digest_header_for(body)
+    digest_header = SignEx.generate_digest(body)
     headers = headers ++ [{"digest", digest_header}]
 
     authorization =  SignEx.HTTP.signature_header_for(headers, %{private_key: private_key})
