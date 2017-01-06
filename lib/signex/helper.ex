@@ -40,4 +40,27 @@ defmodule SignEx.Helper do
   defp hash_key(key) do
     :crypto.hash(:md5, key)
   end
+
+  # def fetch_key_values(collection, keys) do
+  #    Enum.map(keys, fn(key) -> List.keyfind(collection, key, 0) end)
+  # end
+  def fetch_key_values(collection, keys) do
+    do_fetch_signed_headers(collection, keys, [])
+  end
+
+  def do_fetch_signed_headers(_collection, [], progress) do
+    {:ok, Enum.reverse(progress)}
+  end
+  def do_fetch_signed_headers(collection, [key | rest], progress) do
+    key = "#{key}"
+    case List.keyfind(collection, key, 0) do
+      {key, value} ->
+        case do_fetch_signed_headers(collection, rest, [{key, value} | progress]) do
+          {:ok, result} ->
+            {:ok, result}
+        end
+      nil ->
+        {:error, {:missing_key, key}}
+    end
+  end
 end
