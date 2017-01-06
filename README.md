@@ -13,18 +13,14 @@ Signing a message consists of two steps
 
 ## Usage
 
-### Verifying generic messages
+### Signing generic messages
 
 ```elixir
-:ok = SignEx.verify_signature(metadata, signature_params, keystore)
-:ok = SignEx.verify_digest(body, digest)
-
-# Or combined
-# will assume that there is a "digest" key in the meta data that is used to confirm the request
-:ok = SignEx.verify(body, metadata, signature_params, keystore)
+content = "My exiting message!!!"
+metadata = %{"my-key" => "my-value"}
+{:ok, {metadata_with_digest, signature}} = SignEx.sign(content, metadata, keypair)
+true = SignEx.verified?(content, metadata_with_digest, signature, keypair.public_key)
 ```
-
-Signing messages is easiest to achieve using the specific transport implementation
 
 ## SignEx.HTTP
 

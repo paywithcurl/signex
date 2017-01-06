@@ -1,7 +1,7 @@
 defmodule SignEx do
   import SignEx.Helper
 
-  def secure(body, metadata, keypair) do
+  def sign(body, metadata, keypair) do
     metadata = Map.merge(metadata, %{"digest" => generate_digest(body)})
     parameters = SignEx.Signer.sign(metadata, keypair)
     {:ok, {metadata, parameters}}

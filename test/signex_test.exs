@@ -30,21 +30,21 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     test "verify message with body contents", %{keypair: keypair} do
       content = "My exiting message!!!"
       metadata = %{"my-key" => "my-value"}
-      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       assert SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "verify message with empty body", %{keypair: keypair} do
       content = ""
       metadata = %{"my-key" => "my-value"}
-      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       assert SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "deleting the digest compromises the message", %{keypair: keypair} do
       content = "My exiting message!!!"
       metadata = %{"my-key" => "my-value"}
-      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "digest")
       refute SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
@@ -52,7 +52,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     test "tampering with the digest compromises the message", %{keypair: keypair} do
       content = "My exiting message!!!"
       metadata = %{"my-key" => "my-value"}
-      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       content = content <> "nefarious"
       refute SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
@@ -60,7 +60,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     test "tampering with any metadata compromises the message", %{keypair: keypair} do
       content = "My exiting message!!!"
       metadata = %{"my-key" => "my-value"}
-      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = %{metadata | "my-key" => "new-value"}
       refute SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
@@ -68,7 +68,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     test "deleting any metadata compromises the message", %{keypair: keypair} do
       content = "My exiting message!!!"
       metadata = %{"my-key" => "my-value"}
-      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "my-key")
       refute SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
@@ -81,7 +81,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       content = "My exiting message!!!"
       metadata = %{"my-key" => {:not_a_string}}
       assert_raise Protocol.UndefinedError, fn() ->
-        {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+        {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       end
     end
 

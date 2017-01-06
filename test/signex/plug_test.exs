@@ -40,7 +40,10 @@ defmodule SignEx.PlugTest do
     digest_header = SignEx.generate_digest(body)
     headers = headers ++ [{"digest", digest_header}]
 
-    authorization =  SignEx.HTTP.signature_header_for(headers, %{private_key: private_key})
+    authorization =  SignEx.HTTP.signature_header_for(headers, %{
+      private_key: private_key,
+      public_key: public_key
+    })
 
     conn = conn(:post, "/foo/bar", body)
     |> put_req_header("host", "example.com")

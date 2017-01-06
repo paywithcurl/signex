@@ -24,14 +24,7 @@ defmodule SignEx.HTTP do
   Will sign all headers passed in but has no knowledge of path psudo header.
   """
   def signature_header_for(headers, keypair) do
-    signing_string = SignEx.Helper.compose_signing_string(headers)
-    signature = SignEx.Signer.sign_message(signing_string, keypair.private_key) |> Base.encode64
-    parameters = %SignEx.Parameters{
-      key_id: "my-id",
-      algorithm: "rsa-sha256",
-      headers: headers |> Enum.map(fn({k, _v}) -> k end),
-      signature: signature
-    }
+    parameters = SignEx.Signer.sign(headers, keypair)
     {:ok, parameters_string} = SignEx.Parameters.to_string(parameters)
     "Signature " <> parameters_string
   end
