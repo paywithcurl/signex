@@ -7,26 +7,20 @@ defmodule Plug.SignEx do
 
   def call(conn, public_key) do
     case Plug.Conn.get_req_header(conn, "authorization") |> List.first do
-      "Signature " <> signature ->
-        {:ok, parameters} = SignEx.HTTP.parse_parameters(signature)
-        case SignEx.signature_valid?(conn.req_headers, parameters, public_key) do
-          true ->
+      "Signature " <> signature_string ->
+        {:ok, signature} = SignEx.HTTP.parse_parameters(signature_string)
+        digest = (Plug.Conn.get_req_header(conn, "digest") |> List.first) || ""
+        {:ok, body, conn} = Plug.Conn.read_body(conn)
+        headers = conn.req_headers |> Enum.into(%{})
+        if SignEx.verified?(body, headers, signature, public_key) do
             conn
-        # TODO signature doesn't checkout
+        else
+          conn
+          |> halt
         end
       _ ->
         conn
         |> halt
-    end
-    digest = Plug.Conn.get_req_header(conn, "digest") |> List.first
-    {:ok, body, conn} = Plug.Conn.read_body(conn)
-    case digest do
-      nil ->
-        conn
-        |> halt
-      digest ->
-        SignEx.digest_valid?(body, digest)
-        conn
     end
   end
 end
