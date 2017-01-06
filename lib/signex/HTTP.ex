@@ -19,34 +19,6 @@ defmodule SignEx.HTTP do
   """
   @default_headers [:date]
 
-  def lock(headers, keypair, opts \\ []) do
-    {:ok, message} = signature_string(headers, opts)
-    {:ok, signature} = sign_message(message, keypair)
-    header = %{
-      keyId: keypair.id,
-      algorith: keypair.algorithm,
-      headers: opts.headers,
-      signature: signature
-    }
-  end
-  # def lock(headers, body, keypair, opts) do
-  #   {:ok, digest} = digest(body)
-  #   lock(headers ++ [{"digest", digest}], keypair, opts)
-  # end
-
-  def sign_message(message, keypair) do
-    # use the existing signer
-  end
-
-  def verify_signature(headers, key) do
-
-  end
-
-  def check_digest_header("SHA-256=" <> digest, message) do
-    {:ok, digest} = Base.decode64(digest)
-    digest == digest_content(message)
-  end
-
   def digest_header_for(body) do
     "SHA-256=" <> Base.encode64(digest_content(body))
   end
@@ -55,10 +27,28 @@ defmodule SignEx.HTTP do
     :crypto.hash(:sha256, body)
   end
 
+  def check_digest_header("SHA-256=" <> digest, message) do
+    {:ok, digest} = Base.decode64(digest)
+    digest == digest_content(message)
+  end
+
   def compose_signing_string(headers) do
     headers
     |> Enum.map(fn({k, v}) -> "#{k}: #{v}" end)
     |> Enum.join("\n")
+  end
+
+  def signature_header_for(headers, keypair) do
+    signing_string = SignEx.HTTP.compose_signing_string(headers)
+    signature = SignEx.Signer.sign_message(signing_string, keypair.private_key) |> Base.encode64
+    parameters = %SignEx.Parameters{
+      key_id: "my-id",
+      algorithm: "rsa-sha256",
+      headers: headers |> Enum.map(fn({k, _v}) -> k end),
+      signature: signature
+    }
+    {:ok, parameters_string} = SignEx.Parameters.to_string(parameters)
+    "Signature " <> parameters_string
   end
 
   # Any enum with tuple pairs should work.

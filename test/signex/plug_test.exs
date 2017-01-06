@@ -35,22 +35,16 @@ defmodule SignEx.PlugTest do
 
   test "verifying request with body and digest", %{public_key: public_key, private_key: private_key} do
     body = "Hello"
-    digest = SignEx.HTTP.digest_header_for(body)
+    headers = [{"host", "example.com"}]
 
-    {:ok, signature_content} = SignEx.HTTP.signature_string([
-      {"host", "example.com"},
-      {"digest", digest}
-    ], headers: [:host, :digest])
+    digest_header = SignEx.HTTP.digest_header_for(body)
+    headers = headers ++ [{"digest", digest_header}]
 
-    signature = SignEx.Signer.sign_message(signature_content, private_key)
-    :public_key.verify(signature_content, :sha512, signature, SignEx.Helper.decode_key(public_key))
-    "signature" <> "auth params"
-    key_id = "myid"
-    authorization = "Signature key_id=\"#{key_id}\",algorithm=\"rsa-sha256\",headers=\"host digest\",signature=\"#{Base.encode64(signature)}\""
+    authorization =  SignEx.HTTP.signature_header_for(headers, %{private_key: private_key})
 
     conn = conn(:post, "/foo/bar", body)
     |> put_req_header("host", "example.com")
-    |> put_req_header("digest", digest)
+    |> put_req_header("digest", digest_header)
     |> put_req_header("authorization", authorization)
 
 
