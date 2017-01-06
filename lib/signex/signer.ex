@@ -6,6 +6,16 @@ defmodule SignEx.Signer do
     ECPrivateKey: "ec-sha512"
   }
 
+  def sign(data, keypair) do
+    signing_string = SignEx.HTTP.compose_signing_string(data)
+    signature = SignEx.Signer.sign_message(signing_string, keypair.private_key) |> Base.encode64
+    parameters = %SignEx.Parameters{
+      key_id: SignEx.Helper.key_id(keypair.public_key),
+      algorithm: "rsa-sha256",
+      headers: data |> Enum.map(fn({k, _v}) -> k end),
+      signature: signature
+    }
+  end
   def sign(message, private_key, public_key) do
     message_str = Poison.encode!(message)
     {:ok, "Signature #{signature_for(%{message: message_str, private_key: private_key, public_key: public_key})}", message_str}

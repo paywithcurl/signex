@@ -48,6 +48,10 @@ I think that the header keys should be downcased.
 Makes is explicit and HTTP/2 specifies downcased headers.
 plug also downcases them
 
+## Notes
+- Adding extra headers does not count as tamering with the message
+- Could make the validate step delete all unverified headers
+
 ## How test keys were generated
 
 ### EC

@@ -6,11 +6,64 @@ defmodule Mel.InvoiceApprovedConsumerTest do
 
   describe "#sign with rsa keys" do
     setup do
+      private_key = File.read!(Path.expand("../keys/private_key.pem", __ENV__.file))
+      public_key = File.read!(Path.expand("../keys/public_key.pem", __ENV__.file))
       {:ok,
-        private_key: File.read!(Path.expand("../keys/private_key.pem", __ENV__.file)),
-        public_key: File.read!(Path.expand("../keys/public_key.pem", __ENV__.file))
+        private_key: private_key,
+        public_key: public_key,
+        keypair: %{private_key: private_key, public_key: public_key}
       }
     end
+
+    test "verify message with body contents", %{keypair: keypair} do
+      content = "My exiting message!!!"
+      metadata = %{"my-key" => "my-value"}
+      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      assert SignEx.verified?(content, metadata, signature, keypair.public_key)
+    end
+
+    test "verify message with empty body", %{keypair: keypair} do
+      content = ""
+      metadata = %{"my-key" => "my-value"}
+      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      assert SignEx.verified?(content, metadata, signature, keypair.public_key)
+    end
+
+    test "deleting the digest compromises the message", %{keypair: keypair} do
+      content = "My exiting message!!!"
+      metadata = %{"my-key" => "my-value"}
+      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      metadata = Map.delete(metadata, "digest")
+      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+    end
+
+    test "tampering with the digest compromises the message", %{keypair: keypair} do
+      content = "My exiting message!!!"
+      metadata = %{"my-key" => "my-value"}
+      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      content = content <> "nefarious"
+      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+    end
+
+    test "tampering with any metadata compromises the message", %{keypair: keypair} do
+      content = "My exiting message!!!"
+      metadata = %{"my-key" => "my-value"}
+      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      metadata = %{metadata | "my-key" => "new-value"}
+      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+    end
+
+    test "deleting any metadata compromises the message", %{keypair: keypair} do
+      content = "My exiting message!!!"
+      metadata = %{"my-key" => "my-value"}
+      {:ok, {metadata, signature}} = SignEx.secure(content, metadata, keypair)
+      metadata = Map.delete(metadata, "my-key")
+      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+    end
+
+    # Other cases
+    # Changing the signature
+    # Changing the algorithm -> will pass at the moment as algorithm hardcoded
 
     test "takes map as message and returns signatures and plaintext version of map", %{private_key: private_key, public_key: public_key} do
       {:ok, signature, plaintext} = SignEx.sign(@message, private_key, public_key)
