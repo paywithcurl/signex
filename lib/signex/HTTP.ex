@@ -1,6 +1,16 @@
 defmodule SignEx.HTTP do
   @moduledoc """
-  Sign HTTP requests
+  Verify the integrity of HTTP requests.
+
+  `SignEx.HTTP` validates the integrity of HTTP requests by checking digest and signature.
+  The digest header contains the digest of the request body, useing a configurable hash algorithm.
+  The authorization header contains a signature and parameters that secure the request headers.
+
+  *NOTE the signature will sign a subset of the headers,
+  It is required for the digest header to be in this list so guarantee the integrity of the whole request.*
+
+  - [Specification for the contents of the digest header](https://tools.ietf.org/html/rfc3230)
+  - [Sepcification for signing HTTP Messages](https://tools.ietf.org/html/draft-cavage-http-signatures-05)
 
   ## Examples
 
@@ -33,15 +43,22 @@ defmodule SignEx.HTTP do
   end
 
   def check_digest_header("SHA-256=" <> digest, message) do
+    {:ok, digest} = Base.decode64(digest)
     digest == digest_content(message)
   end
 
   def digest_header_for(body) do
-    "SHA-256=" <> digest_content(body)
+    "SHA-256=" <> Base.encode64(digest_content(body))
   end
 
   def digest_content(body) do
     :crypto.hash(:sha256, body)
+  end
+
+  def compose_signing_string(headers) do
+    headers
+    |> Enum.map(fn({k, v}) -> "#{k}: #{v}" end)
+    |> Enum.join("\n")
   end
 
   # Any enum with tuple pairs should work.
@@ -53,10 +70,7 @@ defmodule SignEx.HTTP do
       fetch_signed_headers(signed_headers, headers)
       case fetch_signed_headers(signed_headers, headers) do
         {:ok, headers} ->
-          string = headers
-          |> Enum.map(fn({k, v}) -> "#{k}: #{v}" end)
-          |> Enum.join("\r\n") #might be \n required
-          {:ok, string}
+          {:ok, compose_signing_string(headers)}
         {:error, reason} ->
           {:error, reason}
       end

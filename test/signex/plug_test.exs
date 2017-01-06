@@ -35,7 +35,7 @@ defmodule SignEx.PlugTest do
 
   test "verifying request with body and digest", %{public_key: public_key, private_key: private_key} do
     body = "Hello"
-    digest = SignEx.HTTP.digest_header_for(body) |> Base.encode64
+    digest = SignEx.HTTP.digest_header_for(body)
 
     {:ok, signature_content} = SignEx.HTTP.signature_string([
       {"host", "example.com"},
