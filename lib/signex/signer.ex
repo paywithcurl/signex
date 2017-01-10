@@ -11,7 +11,7 @@ defmodule SignEx.Signer do
     signature = sign_message(signing_string, keypair.private_key) |> Base.encode64
     %SignEx.Parameters{
       key_id: key_id(keypair.public_key),
-      algorithm: "rsa-sha256",
+      algorithm: "rsa-sha512",
       headers: data |> Enum.map(fn({k, _v}) -> k end),
       signature: signature
     }

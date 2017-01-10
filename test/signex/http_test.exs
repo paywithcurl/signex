@@ -8,7 +8,7 @@ defmodule SignEx.HTTPTest do
   test "signature parameters can be recovered from a header" do
     parameters = %SignEx.Parameters{
       key_id: "my-key-id",
-      algorithm: "rsa-sha256",
+      algorithm: "rsa-sha512",
       headers: ["host", "digest"],
       signature: "my-signature"
     }
