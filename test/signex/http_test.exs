@@ -13,6 +13,6 @@ defmodule SignEx.HTTPTest do
       signature: "my-signature"
     }
     {:ok, str} = SignEx.Parameters.to_string(parameters)
-    assert {:ok, parameters} == SignEx.HTTP.parse_parameters(str)
+    assert {:ok, parameters} == SignEx.signature_params(str)
   end
 end
