@@ -38,4 +38,7 @@ defmodule SignEx do
     digest && digest_valid?(body, digest) && signature_valid?(metadata, params, keystore)
   end
   # verify -> {content, signed metadata only}
+  def signature_params(str) do
+    SignEx.HTTP.parse_parameters(str)
+  end
 end
