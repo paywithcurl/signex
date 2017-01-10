@@ -1,9 +1,6 @@
 defmodule Mel.InvoiceApprovedConsumerTest do
   use ExUnit.Case, async: true
 
-  @message %{b: 2, a: 1, c: %{d: "fiz", e: nil}}
-  @message_str Poison.encode!(@message)
-
   test "checking digest for some content" do
     header = SignEx.generate_digest("hello")
     assert SignEx.digest_valid?("hello", header)
