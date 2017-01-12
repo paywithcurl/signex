@@ -47,6 +47,6 @@ defmodule SignEx do
   end
   # verify -> {content, signed metadata only}
   def signature_params(str) do
-    SignEx.HTTP.parse_parameters(str)
+    SignEx.Parameters.parse(str)
   end
 end

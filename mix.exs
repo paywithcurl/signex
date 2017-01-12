@@ -12,7 +12,7 @@ defmodule SignEx.Mixfile do
   end
 
   def application do
-    [applications: []]
+    [applications: [:logger]]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/keys"]

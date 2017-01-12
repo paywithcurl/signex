@@ -24,20 +24,10 @@ defmodule SignEx.HTTP do
   Will sign all headers passed in but has no knowledge of path psudo header.
   """
 
-  @parameters_pattern ~r/^key_id="(?<key_id>[^"]*)",algorithm="(?<algorithm>[^"]*)",headers="(?<headers>[^"]*)",signature="(?<signature>[^"]*)"$/
-
+  require Logger
+  
   def parse_parameters(str) do
-    %{
-      "key_id" => key_id,
-      "algorithm" => algorithm, # = "rsa-sha512", # assume this signature so we can assume signature needs base64 decoding
-      "headers" => headers,
-      "signature" => signature,
-    } = Regex.named_captures(@parameters_pattern, str)
-    {:ok, %SignEx.Parameters{
-      key_id: key_id,
-      algorithm: algorithm,
-      headers: headers |> String.split(" "),
-      signature: signature
-      }}
+    Logger.warn("Deprechiated: Use `SignEx.Parameters.parse`")
+    SignEx.Parameters.parse(str)
   end
 end
