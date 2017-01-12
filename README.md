@@ -24,21 +24,11 @@ true = SignEx.verified?(content, metadata_with_digest, signature, keypair.public
 
 ## SignEx.HTTP
 
-For securing HTTP requests.
-
-```elixir
-{:ok, digest_header} = SignEx.generate_digest(body)
-headers = headers ++ [{"digest", digest_header}]
-
-{:ok, signature_header} = SignEx.HTTP.signature_header_for(headers, keypair)
-headers = headers ++ [{"signature", signature_header}]
-```
 
 Would be nice to have a different word for the combination of actions other than sign.
 e.g. lock, fossilise!, bond(glue), hallmark, stamp, seal
 
 TODO: handle path psudo header
-TODO: Keystore lookup
 
 I think that the header keys should be downcased.
 Makes is explicit and HTTP/2 specifies downcased headers.
