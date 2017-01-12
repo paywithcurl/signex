@@ -10,13 +10,16 @@ defmodule SignEx do
   def signature_valid?(headers, params = %SignEx.Parameters{}, public_key) when is_binary(public_key) do
     # DEBT removed as incompatible updates
     # "rsa-sha512" = params.algorithm
-    {:ok, signature} = Base.decode64(params.signature)
-
-    case fetch_keys(headers, params.headers) do
-      {:ok, ordered_headers} ->
-        signing_string = compose_signing_string(ordered_headers)
-        :public_key.verify(signing_string, :sha512, signature, decode_key(public_key))
-      {:error, _reason} ->
+    case Base.decode64(params.signature) do
+      {:ok, signature} ->
+        case fetch_keys(headers, params.headers) do
+          {:ok, ordered_headers} ->
+            signing_string = compose_signing_string(ordered_headers)
+            :public_key.verify(signing_string, :sha512, signature, decode_key(public_key))
+          {:error, _reason} ->
+            false
+        end
+      :error ->
         false
     end
   end
@@ -30,8 +33,12 @@ defmodule SignEx do
   end
 
   def digest_valid?(content, "SHA-256=" <> digest) do
-    {:ok, digest} = Base.decode64(digest)
-    digest == digest_content(content)
+    case Base.decode64(digest) do
+      {:ok, digest} ->
+        digest == digest_content(content)
+      :error ->
+        false
+    end
   end
 
   def verified?(body, metadata, params, keystore) do
