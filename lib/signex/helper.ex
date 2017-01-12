@@ -29,7 +29,6 @@ defmodule SignEx.Helper do
   end
 
   def fetch_keys(collection, keys) do
-    # treat maps and keyword lists the same
     collection = for {k, v} <- collection, do: {k, v}
     do_fetch_keys(collection, keys, [])
   end
@@ -41,12 +40,7 @@ defmodule SignEx.Helper do
     key = "#{key}"
     case List.keyfind(collection, key, 0) do
       {key, value} ->
-        case do_fetch_keys(collection, rest, [{key, value} | progress]) do
-          {:ok, result} ->
-            {:ok, result}
-          {:error, reason} ->
-            {:error, reason}
-        end
+        do_fetch_keys(collection, rest, [{key, value} | progress])
       nil ->
         {:error, {:missing_key, key}}
     end
