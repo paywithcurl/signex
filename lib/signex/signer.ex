@@ -28,8 +28,7 @@ defmodule SignEx.Signer do
   end
 
   defp algorithm_from_key(private_key) do
-    key_type = decode_pem(private_key)
-    |> elem(0)
+    {key_type, _, _} = decode_pem(private_key)
     Map.get(@key_types, key_type)
   end
 
