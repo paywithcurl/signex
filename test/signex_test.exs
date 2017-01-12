@@ -74,7 +74,6 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       signature = %{signature | signature: signature.signature <> "extra"}
       refute SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
-    # Changing the algorithm -> will pass at the moment as algorithm hardcoded
 
     test "metadata must have a string representation", %{keypair: keypair} do
       content = "My exiting message!!!"
@@ -149,6 +148,5 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       refute SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
-    # Changing the algorithm -> will pass at the moment as algorithm hardcoded
   end
 end
