@@ -6,12 +6,13 @@ defmodule SignEx.Signer do
     ECPrivateKey: "ec-sha512"
   }
 
-  def sign(data, keypair) do
+  def sign(data, %{public_key: public_key, private_key: private_key}) do
     signing_string = compose_signing_string(data)
-    signature = sign_message(signing_string, keypair.private_key) |> Base.encode64
+    signature = sign_message(signing_string, private_key) |> Base.encode64
+    algorithm = algorithm_from_key(private_key)
     %SignEx.Parameters{
-      key_id: key_id(keypair.public_key),
-      algorithm: "rsa-sha512",
+      key_id: key_id(public_key),
+      algorithm: algorithm,
       headers: data |> Enum.map(fn({k, _v}) -> k end),
       signature: signature
     }

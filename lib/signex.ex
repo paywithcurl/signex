@@ -7,9 +7,10 @@ defmodule SignEx do
     {:ok, {metadata, parameters}}
   end
 
-  def signature_valid?(headers, params = %SignEx.Parameters{}, public_key) when is_binary(public_key) do
-    # DEBT removed as incompatible updates
-    # "rsa-sha512" = params.algorithm
+  def signature_valid?(
+    headers,
+    params = %SignEx.Parameters{algorithm: algorithm},
+    public_key) when is_binary(public_key) and algorithm in ["rsa-sha512", "ec-sha512"] do
     case Base.decode64(params.signature) do
       {:ok, signature} ->
         case fetch_keys(headers, params.headers) do
