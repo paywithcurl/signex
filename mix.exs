@@ -12,13 +12,16 @@ defmodule SignEx.Mixfile do
   end
 
   def application do
-    [applications: []]
+    [applications: [:logger]]
   end
 
   defp elixirc_paths(:test), do: ["lib", "test/keys"]
   defp elixirc_paths(_),     do: ["lib"]
 
   defp deps do
-    [{:poison, "~> 2.0"},]
+    [
+      {:poison, "~> 2.0"},
+      {:plug, "~> 1.0"}
+    ]
   end
 end

@@ -1,23 +1,9 @@
 defmodule SignEx.Helper do
 
-  def signature_params(signature) do
-    try do
-      Regex.replace(~r/^Signature /, signature, "")
-      |> String.split(",")
-      |> Enum.map(fn(attr) -> Regex.split(~r/=/, attr, [parts: 2]) end)
-      |> Enum.reduce(%{}, fn
-        ([key, value], result) -> Map.put(result, String.trim(key), value)
-        (_, result) -> result
-      end)
-    rescue
-      _ -> %{}
-    catch
-      _ -> %{}
-    end
-  end
-
-  def hash_message(message, salt) do
-    :crypto.hash(:sha512, message <> salt)
+  def compose_signing_string(data) do
+    data
+    |> Enum.map(fn({k, v}) -> "#{k}: #{v}" end)
+    |> Enum.join("\n")
   end
 
   def decode_key(key) do
@@ -29,6 +15,7 @@ defmodule SignEx.Helper do
     :crypto.strong_rand_bytes(64) |> Base.encode64
   end
 
+  # What is the specification for this?
   def key_id(key) do
     key
     |> String.replace(~r/\r|\n/, "")
@@ -39,5 +26,23 @@ defmodule SignEx.Helper do
 
   defp hash_key(key) do
     :crypto.hash(:md5, key)
+  end
+
+  def fetch_keys(collection, keys) do
+    collection = for {k, v} <- collection, do: {k, v}
+    do_fetch_keys(collection, keys, [])
+  end
+
+  def do_fetch_keys(_collection, [], progress) do
+    {:ok, Enum.reverse(progress)}
+  end
+  def do_fetch_keys(collection, [key | rest], progress) do
+    key = "#{key}"
+    case List.keyfind(collection, key, 0) do
+      {key, value} ->
+        do_fetch_keys(collection, rest, [{key, value} | progress])
+      nil ->
+        {:error, {:missing_key, key}}
+    end
   end
 end
