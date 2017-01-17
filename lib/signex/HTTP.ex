@@ -25,8 +25,8 @@ defmodule SignEx.HTTP do
   """
 
   def sign(request = %{
-    method: method,
-    path: path,
+    method: _method,
+    path: _path,
     headers: headers,
     body: body
     }, keypair) do
@@ -44,28 +44,19 @@ defmodule SignEx.HTTP do
   end
 
   def verified?(request = %{
-    method: method,
-    path: path,
+    method: _method,
+    path: _path,
     headers: headers,
     body: body
     }, keystore) do
-      headers_to_sign = [request_target(request) | headers]
-      |> Enum.into(%{})
-      case Map.fetch(headers_to_sign, "authorization") do
-        {:ok, "Signature " <> signature_string} ->
-          case SignEx.Parameters.parse(signature_string) do
-            {:ok, params} ->
-              case fetch_key(keystore, params.key_id) do
-                {:ok, public_key} ->
-                  SignEx.verified?(body, headers_to_sign, params, public_key)
-                {:error, _} ->
-                  false
-              end
-            _ ->
-              false
-          end
-        _ ->
-          false
+      with headers_to_sign = ([request_target(request) | headers] |> Enum.into(%{})),
+        {:ok, "Signature " <> signature_string} <- Map.fetch(headers_to_sign, "authorization"),
+        {:ok, params} <- SignEx.Parameters.parse(signature_string),
+        {:ok, public_key} <- fetch_key(keystore, params.key_id)
+      do
+        SignEx.verified?(body, headers_to_sign, params, public_key)
+      else
+        _ -> false
       end
   end
 
