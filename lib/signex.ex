@@ -45,8 +45,12 @@ defmodule SignEx do
   end
 
   def verified?(body, metadata, params, keystore) do
-    digest = metadata["digest"]
-    digest && digest_valid?(body, digest) && signature_valid?(metadata, params, keystore)
+    case Map.fetch(metadata, "digest") do
+      {:ok, digest} ->
+        digest_valid?(body, digest) && signature_valid?(metadata, params, keystore)
+      :error ->
+        false
+    end
   end
   # verify -> {content, signed metadata only}
   def signature_params(str) do
