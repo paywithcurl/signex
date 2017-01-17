@@ -44,10 +44,10 @@ defmodule SignEx do
     end
   end
 
-  def verified?(body, metadata, params, keystore) do
+  def verified?(body, metadata, params, public_key) when is_binary(public_key) do
     case Map.fetch(metadata, "digest") do
       {:ok, digest} ->
-        digest_valid?(body, digest) && signature_valid?(metadata, params, keystore)
+        digest_valid?(body, digest) && signature_valid?(metadata, params, public_key)
       :error ->
         false
     end

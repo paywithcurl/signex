@@ -43,6 +43,39 @@ defmodule SignEx.HTTP do
       end
   end
 
+  def verified?(request = %{
+    method: method,
+    path: path,
+    headers: headers,
+    body: body
+    }, keystore) do
+      headers_to_sign = [request_target(request) | headers]
+      |> Enum.into(%{})
+      case Map.fetch(headers_to_sign, "authorization") do
+        {:ok, "Signature " <> signature_string} ->
+          case SignEx.Parameters.parse(signature_string) do
+            {:ok, params} ->
+              case fetch_key(keystore, params.key_id) do
+                {:ok, public_key} ->
+                  SignEx.verified?(body, headers_to_sign, params, public_key)
+                {:error, _} ->
+                  false
+              end
+            _ ->
+              false
+          end
+        _ ->
+          false
+      end
+  end
+
+  def fetch_key(public_key, _id) when is_binary(public_key) do
+    {:ok, public_key}
+  end
+  def fetch_key(keystore, id) when is_function(keystore, 1) do
+    keystore.(id)
+  end
+
   defp request_target(%{method: method, path: path}) do
     method = "#{method}" |> String.downcase
     {"(request-target)", "#{method} #{path}"}
