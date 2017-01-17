@@ -16,14 +16,14 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       content = "My exiting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
-      assert SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert true == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "verify message with empty body", %{keypair: keypair} do
       content = ""
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
-      assert SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert true == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "tampering with the content compromises the message", %{keypair: keypair} do
@@ -31,7 +31,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       content = content <> "nefarious"
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "tampering with any metadata compromises the message", %{keypair: keypair} do
@@ -39,7 +39,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = %{metadata | "some-content" => "new-value"}
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "deleting any metadata compromises the message", %{keypair: keypair} do
@@ -47,7 +47,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "some-content")
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "tampering with the digest compromises the message", %{keypair: keypair} do
@@ -55,7 +55,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = %{metadata | "digest" => "SHA-256=some other string"}
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "deleting the digest compromises the message", %{keypair: keypair} do
@@ -63,7 +63,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "digest")
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
 
@@ -72,7 +72,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       signature = %{signature | signature: signature.signature <> "extra"}
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "metadata must have a string representation", %{keypair: keypair} do
@@ -97,14 +97,14 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       content = "My exiting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
-      assert SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert true == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "verify message with empty body", %{keypair: keypair} do
       content = ""
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
-      assert SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert true == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "deleting the digest compromises the message", %{keypair: keypair} do
@@ -112,7 +112,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "digest")
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "tampering with the content compromises the message", %{keypair: keypair} do
@@ -120,7 +120,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       content = content <> "nefarious"
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "tampering with any metadata compromises the message", %{keypair: keypair} do
@@ -128,7 +128,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = %{metadata | "some-content" => "new-value"}
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "deleting any metadata compromises the message", %{keypair: keypair} do
@@ -136,7 +136,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "some-content")
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
 
@@ -145,7 +145,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       signature = %{signature | signature: signature.signature <> "extra"}
-      refute SignEx.verified?(content, metadata, signature, keypair.public_key)
+      assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
   end
