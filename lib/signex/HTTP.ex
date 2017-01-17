@@ -24,8 +24,48 @@ defmodule SignEx.HTTP do
   Will sign all headers passed in but has no knowledge of path psudo header.
   """
 
+  def sign(request = %{
+    method: _method,
+    path: _path,
+    headers: headers,
+    body: body
+    }, keypair) do
+      headers_to_sign = [request_target(request) | headers]
+      |> Enum.into(%{})
+      case SignEx.sign(body, headers_to_sign, keypair) do
+        {:ok, {%{"digest" => digest}, signature_params}} ->
+          {:ok, signature_string} = SignEx.Parameters.serialize(signature_params)
+          headers = headers ++ [
+            {"digest", digest},
+            {"authorization", "Signature "<> signature_string}
+          ]
+          %{request | headers: headers}
+      end
+  end
+
+  def verified?(request = %{
+    method: _method,
+    path: _path,
+    headers: headers,
+    body: body
+    }, keystore) do
+      headers_to_sign = ([request_target(request) | headers] |> Enum.into(%{}))
+      with {:ok, "Signature " <> signature_string} <- Map.fetch(headers_to_sign, "authorization"),
+           {:ok, params} <- SignEx.Parameters.parse(signature_string)
+      do
+        SignEx.verified?(body, headers_to_sign, params, keystore)
+      else
+        _ -> false
+      end
+  end
+
+  defp request_target(%{method: method, path: path}) do
+    method = "#{method}" |> String.downcase
+    {"(request-target)", "#{method} #{path}"}
+  end
+
   require Logger
-  
+
   def parse_parameters(str) do
     Logger.warn("Deprechiated: Use `SignEx.Parameters.parse`")
     SignEx.Parameters.parse(str)

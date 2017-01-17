@@ -45,15 +45,23 @@ defmodule SignEx do
   end
 
   def verified?(body, metadata, params, keystore) do
-    case Map.fetch(metadata, "digest") do
-      {:ok, digest} ->
-        digest_valid?(body, digest) && signature_valid?(metadata, params, keystore)
-      :error ->
-        false
+    with {:ok, public_key} <- fetch_key(keystore, params.key_id),
+         {:ok, digest} <- Map.fetch(metadata, "digest")
+    do
+      digest_valid?(body, digest) && signature_valid?(metadata, params, public_key)
+    else
+      _ -> false
     end
   end
-  # verify -> {content, signed metadata only}
+  
   def signature_params(str) do
     SignEx.Parameters.parse(str)
+  end
+
+  defp fetch_key(public_key, _id) when is_binary(public_key) do
+    {:ok, public_key}
+  end
+  defp fetch_key(keystore, id) when is_function(keystore, 1) do
+    keystore.(id)
   end
 end
