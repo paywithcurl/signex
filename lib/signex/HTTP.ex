@@ -67,7 +67,7 @@ defmodule SignEx.HTTP do
   require Logger
 
   def parse_parameters(str) do
-    Logger.warn("Deprechiated: Use `SignEx.Parameters.parse`")
+    Logger.warn("Depreciated: Use `SignEx.Parameters.parse`")
     SignEx.Parameters.parse(str)
   end
 end

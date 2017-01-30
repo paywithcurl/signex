@@ -8,7 +8,7 @@ defmodule SignEx.Parameters do
   defstruct [:key_id, :algorithm, :headers, :signature]
 
   def to_string(params) do
-    Logger.warn("Deprechiated: Use `SignEx.Parameters.serialize`")
+    Logger.warn("Depreciated: Use `SignEx.Parameters.serialize`")
     serialize(params)
   end
 
