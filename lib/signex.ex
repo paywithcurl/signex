@@ -53,8 +53,10 @@ defmodule SignEx do
       _ -> false
     end
   end
-  
+
   def signature_params(str) do
+    Logger.warn("Deprechiated: Use `SignEx.Parameters.parse`")
+    
     SignEx.Parameters.parse(str)
   end
 
