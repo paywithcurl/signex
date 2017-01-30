@@ -1,7 +1,12 @@
 defmodule SignEx do
   require Logger
   import SignEx.Helper
+  
+  @algorithms ["rsa-sha512", "ec-sha512"]
 
+  def sign(_body, %{"signature" => _anything}, _keypair) do
+    {:error, :already_signed}
+  end
   def sign(body, metadata = %{}, keypair = %{public_key: public_key, private_key: private_key}) when
       is_binary(body) and is_binary(public_key) and is_binary(private_key) do
     metadata = Map.merge(metadata, %{"digest" => generate_digest(body)})
@@ -9,7 +14,6 @@ defmodule SignEx do
     {:ok, {metadata, parameters}}
   end
 
-  @algorithms ["rsa-sha512", "ec-sha512"]
 
   def signature_valid?(
     headers,

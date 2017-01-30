@@ -13,6 +13,10 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
   end
 
+  test "fails to sign if a signature already present" do
+    {:error, reason} = SignEx.sign("hi", %{"signature" => "my-signature"}, %{public_key: "public", private_key: "private"})
+  end
+
   describe "#sign with rsa keys" do
     setup do
       private_key = File.read!(Path.expand("../keys/private_key.pem", __ENV__.file))
@@ -23,6 +27,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
         keypair: %{private_key: private_key, public_key: public_key}
       }
     end
+
 
     test "verify message with body contents", %{keypair: keypair} do
       content = "My exiting message!!!"
