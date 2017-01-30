@@ -1,13 +1,19 @@
 defmodule SignEx do
+  require Logger
   import SignEx.Helper
+  
+  @algorithms ["rsa-sha512", "ec-sha512"]
 
-  def sign(body, metadata, keypair) do
+  def sign(_body, %{"signature" => _anything}, _keypair) do
+    {:error, :already_signed}
+  end
+  def sign(body, metadata = %{}, keypair = %{public_key: public_key, private_key: private_key}) when
+      is_binary(body) and is_binary(public_key) and is_binary(private_key) do
     metadata = Map.merge(metadata, %{"digest" => generate_digest(body)})
     parameters = SignEx.Signer.sign(metadata, keypair)
     {:ok, {metadata, parameters}}
   end
 
-  @algorithms ["rsa-sha512", "ec-sha512"]
 
   def signature_valid?(
     headers,
@@ -44,7 +50,8 @@ defmodule SignEx do
     end
   end
 
-  def verified?(body, metadata, params, keystore) do
+  def verified?(body, metadata = %{}, params= %SignEx.Parameters{}, keystore) when
+      is_binary(body) do
     with {:ok, public_key} <- fetch_key(keystore, params.key_id),
          {:ok, digest} <- Map.fetch(metadata, "digest")
     do
@@ -53,8 +60,10 @@ defmodule SignEx do
       _ -> false
     end
   end
-  
+
   def signature_params(str) do
+    Logger.warn("Depreciated: Use `SignEx.Parameters.parse`")
+
     SignEx.Parameters.parse(str)
   end
 

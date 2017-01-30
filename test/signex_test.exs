@@ -1,6 +1,22 @@
 defmodule Mel.InvoiceApprovedConsumerTest do
   use ExUnit.Case, async: true
 
+  test "signing fails when body not a binary" do
+    assert_raise FunctionClauseError, fn() ->
+      SignEx.sign(5, %{}, %{public_key: "public", private_key: "private"})
+    end
+  end
+
+  test "signing fails when keys not provided" do
+    assert_raise FunctionClauseError, fn() ->
+      SignEx.sign("body", %{}, %{public_key: nil, private_key: nil})
+    end
+  end
+
+  test "fails to sign if a signature already present" do
+    {:error, reason} = SignEx.sign("hi", %{"signature" => "my-signature"}, %{public_key: "public", private_key: "private"})
+  end
+
   describe "#sign with rsa keys" do
     setup do
       private_key = File.read!(Path.expand("../keys/private_key.pem", __ENV__.file))
@@ -11,6 +27,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
         keypair: %{private_key: private_key, public_key: public_key}
       }
     end
+
 
     test "verify message with body contents", %{keypair: keypair} do
       content = "My exiting message!!!"

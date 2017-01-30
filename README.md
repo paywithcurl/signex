@@ -58,19 +58,11 @@ true = SignEx.verified?(content, metadata_with_digest, signature, keypair.public
 
 ## SignEx.HTTP
 
-
 Would be nice to have a different word for the combination of actions other than sign.
 e.g. lock, fossilise!, bond(glue), hallmark, stamp, seal, intact
 
-TODO: handle path psudo header
-
-I think that the header keys should be downcased.
-Makes is explicit and HTTP/2 specifies downcased headers.
-plug also downcases them
-
 ## Notes
-- Adding extra headers does not count as tamering with the message
-- Could make the validate step delete all unverified headers
+- Adding extra headers does not count as tampering with the message
 
 ## How test keys were generated
 
