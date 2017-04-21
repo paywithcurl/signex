@@ -34,7 +34,7 @@ defmodule SignEx.Parameters do
   def parse(serialized_parameters) do
     %{
       "key_id" => key_id,
-      "algorithm" => algorithm, # = "rsa-sha512", # assume this signature so we can assume signature needs base64 decoding
+      "algorithm" => algorithm,
       "headers" => headers,
       "signature" => signature,
     } = Regex.named_captures(@parameters_pattern, serialized_parameters)

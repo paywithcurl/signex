@@ -1,8 +1,12 @@
 defmodule SignEx do
   require Logger
+  require SignEx.Algorithm
+  alias SignEx.Algorithm
   import SignEx.Helper
-  
-  @algorithms ["rsa-sha512", "ec-sha512"]
+
+  @digest Algorithm.default_digest()
+  @digest_str Algorithm.humanize_digest(@digest)
+  @allowed_algorithms Algorithm.allowed_strings()
 
   def sign(_body, %{"signature" => _anything}, _keypair) do
     {:error, :already_signed}
@@ -17,14 +21,16 @@ defmodule SignEx do
 
   def signature_valid?(
     headers,
-    params = %SignEx.Parameters{algorithm: algorithm},
-    public_key) when is_binary(public_key) and algorithm in @algorithms do
+    params = %SignEx.Parameters{algorithm: algorithm_str},
+    public_key) when is_binary(public_key) and algorithm_str in @allowed_algorithms
+  do
+    algorithm = Algorithm.new(algorithm_str)
     case Base.decode64(params.signature) do
       {:ok, signature} ->
         case fetch_keys(headers, params.headers) do
           {:ok, ordered_headers} ->
             signing_string = compose_signing_string(ordered_headers)
-            :public_key.verify(signing_string, :sha512, signature, decode_key(public_key))
+            :public_key.verify(signing_string, algorithm.digest, signature, decode_key(public_key))
           {:error, _reason} ->
             false
         end
@@ -34,14 +40,14 @@ defmodule SignEx do
   end
 
   def generate_digest(body) do
-    "SHA-256=" <> Base.encode64(digest_content(body))
+    Algorithm.humanize_digest(@digest) <> "=" <> Base.encode64(digest_content(body))
   end
 
   def digest_content(content) do
-    :crypto.hash(:sha256, content)
+    :crypto.hash(@digest, content)
   end
 
-  def digest_valid?(content, "SHA-256=" <> digest) do
+  def digest_valid?(content, @digest_str <> "=" <> digest) do
     case Base.decode64(digest) do
       {:ok, digest} ->
         digest == digest_content(content)
