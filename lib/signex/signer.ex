@@ -1,35 +1,34 @@
 defmodule SignEx.Signer do
+  alias SignEx.Algorithm
   import SignEx.Helper
 
-  @key_types %{
-    RSAPrivateKey: "rsa-sha512",
-    ECPrivateKey: "ec-sha512"
-  }
-
   def sign(data, %{public_key: public_key, private_key: private_key}) do
+    algorithm = algorithm_from_key(decode_pem(private_key))
     signing_string = compose_signing_string(data)
-    signature = sign_message(signing_string, private_key) |> Base.encode64
-    algorithm = algorithm_from_key(private_key)
+    signature = sign_message(signing_string, private_key, algorithm) |> Base.encode64
     %SignEx.Parameters{
       key_id: key_id(public_key),
-      algorithm: algorithm,
+      algorithm: algorithm |> to_string(),
       headers: data |> Enum.map(fn({k, _v}) -> k end),
       signature: signature
     }
   end
 
-  def sign_message(message, private_key) do
-    :public_key.sign(message, :sha512, decoded_pem_entry(private_key))
+  def algorithm_from_key({key_type, _, _}) do
+    encryption = key_type
+    |> to_string
+    |> String.replace("PrivateKey", "")
+    |> String.downcase
+    %Algorithm{encryption: encryption, digest: Algorithm.default_digest()}
+  end
+
+  def sign_message(message, private_key, algorithm) do
+    :public_key.sign(message, algorithm.digest, decoded_pem_entry(private_key))
   end
 
   defp decoded_pem_entry(private_key) do
     decode_pem(private_key)
     |> :public_key.pem_entry_decode
-  end
-
-  defp algorithm_from_key(private_key) do
-    {key_type, _, _} = decode_pem(private_key)
-    Map.get(@key_types, key_type)
   end
 
   defp decode_pem(private_key) do

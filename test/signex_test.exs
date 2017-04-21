@@ -14,7 +14,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
   end
 
   test "fails to sign if a signature already present" do
-    {:error, reason} = SignEx.sign("hi", %{"signature" => "my-signature"}, %{public_key: "public", private_key: "private"})
+    {:error, _reason} = SignEx.sign("hi", %{"signature" => "my-signature"}, %{public_key: "public", private_key: "private"})
   end
 
   describe "#sign with rsa keys" do
@@ -71,7 +71,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       content = "My exiting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
-      metadata = %{metadata | "digest" => "SHA-256=some other string"}
+      metadata = %{metadata | "digest" => "SHA-512=some other string"}
       assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
