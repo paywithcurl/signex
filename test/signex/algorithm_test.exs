@@ -34,4 +34,9 @@ defmodule SignEx.AlgorithmTest do
   test "takes digest and humanizes" do
     assert Algorithm.humanize_digest(:sha122) == "SHA-122"
   end
+
+  test "check if digest algorithm is valid" do
+    assert Algorithm.allowed_digest?("sha512")
+    refute Algorithm.allowed_digest?("sha123")
+  end
 end

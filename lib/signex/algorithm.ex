@@ -23,6 +23,8 @@ defmodule SignEx.Algorithm do
     @available
     |> Enum.map(&(to_string(elem(&1,0)) <> "-" <> to_string(elem(&1, 1))))
   )
+
+  @available_digests [:sha256, :sha384, :sha512]
   @doc """
   List of available algorithms where each element is SignEx.Algorithm struct
   """
@@ -36,6 +38,11 @@ defmodule SignEx.Algorithm do
   end
 
   @doc """
+  Return list of supported digest algorithms
+  """
+  def available_digests, do: @available_digests
+
+  @doc """
   List of allowed algorithm string where each element is in format 'encryption-digest'
   """
   def allowed_strings, do: @allowed_strings
@@ -45,6 +52,13 @@ defmodule SignEx.Algorithm do
   """
   def default_digest do
     :sha512
+  end
+
+  @doc """
+  Check if given digest string is allowd in SignEx
+  """
+  def allowed_digest?(digest_str) do
+    Enum.any?(@available_digests, fn(digest) -> to_string(digest) == digest_str end)
   end
 
   @doc """
