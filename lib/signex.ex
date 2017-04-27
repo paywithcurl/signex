@@ -37,6 +37,8 @@ defmodule SignEx do
         case Helper.fetch_keys(headers, params.headers) do
           {:ok, ordered_headers} ->
             signing_string = Helper.compose_signing_string(ordered_headers)
+            Logger.debug("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
+            Logger.debug(:public_key.verify(signing_string, algorithm.digest, signature, Helper.decode_key(public_key)))
             Logger.debug(algorithm_str)
             Logger.debug(signing_string)
             Logger.debug(signing_string |> generate_digest)
