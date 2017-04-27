@@ -66,11 +66,11 @@ defmodule SignEx.HTTP do
             {:ok, parameters} ->
               {k, v} = request_target(request)
               headers = Map.put(headers, k, v)
-              SignEx.verified?(body, headers, parameters, keystore)
-              |> if  do
-                {:ok, request}
-              # else
-              #   {:e}
+              case SignEx.verify(body, headers, parameters, keystore) do
+                {:ok, _} ->
+                  {:ok, request}
+                {:error, reason} ->
+                  {:error, reason}
               end
             {:error, reason} ->
               {:error, reason}

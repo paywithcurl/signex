@@ -91,4 +91,15 @@ defmodule SignEx.HTTPTest do
     assert {:error, {:unparsable_signature_parameters, _}} = SignEx.HTTP.verify(signed_request, keypair.public_key)
   end
 
+  test "key not available", %{keypair: keypair} do
+    request = %{
+      method: :POST,
+      path: "/some/path",
+      headers: [{"content-type", "application/json"}],
+      body: Poison.encode!(%{some: "content"})
+    }
+    signed_request = %{headers: headers} = SignEx.HTTP.sign(request, keypair)
+    assert {:error, {:key_not_found, _}} = SignEx.HTTP.verify(signed_request, fn(id) -> {:error, {:key_not_found, id}} end)
+  end
+
 end
