@@ -17,6 +17,19 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     {:error, _reason} = SignEx.sign("hi", %{"signature" => "my-signature"}, %{public_key: "public", private_key: "private"})
   end
 
+  describe "digest_valid?" do
+    test "is valid hashing function is used and hashed content matches given digest" do
+      content = "{\"this\": \"is content\"}"
+      digest = SignEx.generate_digest(content, :sha256)
+      assert SignEx.digest_valid?(content, digest)
+    end
+
+    test "is not valid when invalid digest string is passed in" do
+      content = "{\"this\": \"is content\"}"
+      refute SignEx.digest_valid?(content, "blah")
+    end
+  end
+
   describe "#sign with rsa keys" do
     setup do
       private_key = File.read!(Path.expand("../keys/private_key.pem", __ENV__.file))
