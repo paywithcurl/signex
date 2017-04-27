@@ -59,6 +59,31 @@ defmodule SignEx.HTTP do
       end
   end
 
+
+  def verify(request = %{
+    method: _method,
+    path: _path,
+    headers: headers,
+    body: body
+    }, keystore) do
+      headers = Enum.into(headers, %{})
+      case Map.fetch(headers, "authorization") do
+        {:ok, "Signature " <> signature_string} ->
+          case SignEx.Parameters.parse(signature_string) do
+            {:ok, parameters} ->
+              headers = Map.put(headers, "(request-target)", request_target(request))
+              SignEx.verified?(body, headers, parameters, keystore)
+              # {:ok, request}
+            {:error, reason} ->
+              {:error, reason}
+          end
+        {:ok, authorization} ->
+          {:error, {:unrecognised_authorization, authorization}}
+        :error ->
+          {:error, :missing_authorization_header}
+      end
+  end
+
   defp request_target(%{method: method, path: path}) do
     method = "#{method}" |> String.downcase
     {"(request-target)", "#{method} #{path}"}

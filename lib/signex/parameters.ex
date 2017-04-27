@@ -32,17 +32,21 @@ defmodule SignEx.Parameters do
   Parse a parameters string serialized as a HTTP signature header.
   """
   def parse(serialized_parameters) do
-    %{
-      "key_id" => key_id,
-      "algorithm" => algorithm,
-      "headers" => headers,
-      "signature" => signature,
-    } = Regex.named_captures(@parameters_pattern, serialized_parameters)
-    {:ok, %SignEx.Parameters{
-      key_id: key_id,
-      algorithm: algorithm,
-      headers: headers |> String.split(" "),
-      signature: signature
-      }}
+    case Regex.named_captures(@parameters_pattern, serialized_parameters) do
+      %{
+        "key_id" => key_id,
+        "algorithm" => algorithm,
+        "headers" => headers,
+        "signature" => signature,
+      } ->
+        {:ok, %SignEx.Parameters{
+          key_id: key_id,
+          algorithm: algorithm,
+          headers: headers |> String.split(" "),
+          signature: signature
+        }}
+      nil ->
+        {:error, {:unparsable_signature_parameters, serialized_parameters}}
+    end
   end
 end

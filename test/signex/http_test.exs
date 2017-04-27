@@ -1,5 +1,6 @@
 defmodule SignEx.HTTPTest do
   use ExUnit.Case
+  doctest SignEx.HTTP
 
   setup do
     private_key = File.read!(Path.expand("../../keys/private_key.pem", __ENV__.file))
@@ -38,4 +39,56 @@ defmodule SignEx.HTTPTest do
       (_key_id) -> {:ok, keypair.public_key}
     end)
   end
+
+  test "successful validation", %{keypair: keypair} do
+    request = %{
+      method: :POST,
+      path: "/some/path",
+      headers: [{"content-type", "application/json"}],
+      body: Poison.encode!(%{some: "content"})
+    }
+    signed_request = %{headers: headers} = SignEx.HTTP.sign(request, keypair)
+    assert {:ok, ^signed_request} = SignEx.HTTP.verify(signed_request, keypair.public_key)
+  end
+
+  test "Missing authorization", %{keypair: keypair} do
+    request = %{
+      method: :POST,
+      path: "/some/path",
+      headers: [{"content-type", "application/json"}],
+      body: Poison.encode!(%{some: "content"})
+    }
+    signed_request = %{headers: headers} = SignEx.HTTP.sign(request, keypair)
+    signed_request = %{signed_request | headers: :proplists.delete("authorization", headers)}
+    assert {:error, :missing_authorization_header} = SignEx.HTTP.verify(signed_request, keypair.public_key)
+  end
+
+  test "unexpected authorization type", %{keypair: keypair} do
+    request = %{
+      method: :POST,
+      path: "/some/path",
+      headers: [{"content-type", "application/json"}],
+      body: Poison.encode!(%{some: "content"})
+    }
+    signed_request = %{headers: headers} = SignEx.HTTP.sign(request, keypair)
+    headers = :proplists.delete("authorization", headers)
+    headers = headers ++ [{"authorization", "Basic password"}]
+    signed_request = %{signed_request | headers: headers}
+    assert {:error, {:unrecognised_authorization, _}} = SignEx.HTTP.verify(signed_request, keypair.public_key)
+  end
+
+  test "incorrectly serialized signature params", %{keypair: keypair} do
+    request = %{
+      method: :POST,
+      path: "/some/path",
+      headers: [{"content-type", "application/json"}],
+      body: Poison.encode!(%{some: "content"})
+    }
+    signed_request = %{headers: headers} = SignEx.HTTP.sign(request, keypair)
+    headers = :proplists.delete("authorization", headers)
+    headers = headers ++ [{"authorization", "Signature password"}]
+    signed_request = %{signed_request | headers: headers}
+    assert {:error, {:unparsable_signature_parameters, _}} = SignEx.HTTP.verify(signed_request, keypair.public_key)
+  end
+
 end
