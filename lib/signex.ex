@@ -2,7 +2,7 @@ defmodule SignEx do
   require Logger
   require SignEx.Algorithm
   alias SignEx.Algorithm
-  import SignEx.Helper
+  alias SignEx.Helper
 
   @digest_algorithm Algorithm.default_digest()
   @allowed_algorithms Algorithm.allowed_strings()
@@ -34,10 +34,14 @@ defmodule SignEx do
     algorithm = Algorithm.new(algorithm_str)
     case Base.decode64(params.signature) do
       {:ok, signature} ->
-        case fetch_keys(headers, params.headers) do
+        case Helper.fetch_keys(headers, params.headers) do
           {:ok, ordered_headers} ->
-            signing_string = compose_signing_string(ordered_headers)
-            :public_key.verify(signing_string, algorithm.digest, signature, decode_key(public_key))
+            signing_string = Helper.compose_signing_string(ordered_headers)
+            Logger.debug(algorithm_str)
+            Logger.debug(signing_string)
+            Logger.debug(signing_string |> generate_digest)
+            Logger.debug(public_key)
+            :public_key.verify(signing_string, algorithm.digest, signature, Helper.decode_key(public_key))
             |> if do
               {:ok, :valid}
             else
