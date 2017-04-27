@@ -71,9 +71,13 @@ defmodule SignEx.HTTP do
         {:ok, "Signature " <> signature_string} ->
           case SignEx.Parameters.parse(signature_string) do
             {:ok, parameters} ->
-              headers = Map.put(headers, "(request-target)", request_target(request))
+              {k, v} = request_target(request)
+              headers = Map.put(headers, k, v)
               SignEx.verified?(body, headers, parameters, keystore)
-              # {:ok, request}
+              |> if  do
+                {:ok, request}
+
+              end
             {:error, reason} ->
               {:error, reason}
           end
