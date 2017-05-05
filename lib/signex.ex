@@ -92,7 +92,7 @@ defmodule SignEx do
   end
 
   def digest_content(content, digest_algorithm \\ @digest_algorithm) do
-    :crypto.hash(digest_algorithm, content)  |> Base.encode16() |> String.downcase()
+    :crypto.hash(digest_algorithm, content)
   end
 
   def validate_digest(content, full_digest) do
