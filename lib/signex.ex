@@ -2,7 +2,7 @@ defmodule SignEx do
   require Logger
   require SignEx.Algorithm
   alias SignEx.Algorithm
-  import SignEx.Helper
+  alias SignEx.Helper
 
   @digest_algorithm Algorithm.default_digest()
   @allowed_algorithms Algorithm.allowed_strings()
@@ -18,7 +18,15 @@ defmodule SignEx do
   end
 
 
-  def signature_valid?(
+  def signature_valid?(headers, params, public_key) do
+    case validate_signature(headers, params, public_key) do
+      {:ok, _} ->
+        true
+      {:error, _} ->
+        false
+    end
+  end
+  def validate_signature(
     headers,
     params = %SignEx.Parameters{algorithm: algorithm_str},
     public_key) when is_binary(public_key) and algorithm_str in @allowed_algorithms
@@ -26,26 +34,50 @@ defmodule SignEx do
     algorithm = Algorithm.new(algorithm_str)
     case Base.decode64(params.signature) do
       {:ok, signature} ->
-        case fetch_keys(headers, params.headers) do
+        case Helper.fetch_keys(headers, params.headers) do
           {:ok, ordered_headers} ->
-            signing_string = compose_signing_string(ordered_headers)
-            :public_key.verify(signing_string, algorithm.digest, signature, decode_key(public_key))
-          {:error, _reason} ->
-            false
+            signing_string = Helper.compose_signing_string(ordered_headers)
+            :public_key.verify(signing_string, algorithm.digest, signature, Helper.decode_key(public_key))
+            |> if do
+              {:ok, :valid}
+            else
+              {:error, :signature_incorrect}
+            end
+          {:error, reason} ->
+            {:error, reason}
         end
       :error ->
-        false
+        {:error, :invalid_signature_encoding}
     end
   end
 
-  def verified?(body, metadata = %{}, params= %SignEx.Parameters{}, keystore) when
+
+  def verified?(body, metadata, params, keystore) do
+    case verify(body, metadata, params, keystore) do
+      {:ok, _} ->
+        true
+      {:error, _} ->
+        false
+    end
+  end
+  def verify(body, metadata = %{}, params= %SignEx.Parameters{}, keystore) when
       is_binary(body) do
-    with {:ok, public_key} <- fetch_key(keystore, params.key_id),
-         {:ok, full_digest} <- Map.fetch(metadata, "digest")
-    do
-      digest_valid?(body, full_digest) && signature_valid?(metadata, params, public_key)
-    else
-      _ -> false
+    case fetch_key(keystore, params.key_id) do
+      {:ok, public_key} ->
+        case Map.fetch(metadata, "digest") do
+          {:ok, full_digest} ->
+            case validate_digest(body, full_digest) do
+              {:ok, _} ->
+                validate_signature(metadata, params, public_key)
+              {:error, reason} ->
+                {:error, reason}
+            end
+          :error ->
+            {:error, :missing_digest_metadata}
+        end
+
+      {:error, reason} ->
+        {:error, reason}
     end
   end
 
@@ -57,13 +89,29 @@ defmodule SignEx do
     :crypto.hash(digest_algorithm, content)
   end
 
+  def validate_digest(content, full_digest) do
+    case full_digest_destruct(full_digest) do
+      {:ok, {digest_algorithm, digest}} ->
+        case Base.decode64(digest) do
+          {:ok, digest} ->
+            if digest == digest_content(content, digest_algorithm) do
+              {:ok, content}
+            else
+              {:error, :digest_not_for_content}
+            end
+          :error ->
+            {:error, :invalid_digest_encoding}
+        end
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
   def digest_valid?(content, full_digest) do
-    with {:ok, {digest_algorithm, digest}} <- full_digest_destruct(full_digest),
-         {:ok, digest} <- Base.decode64(digest)
-    do
-      digest == digest_content(content, digest_algorithm)
-    else
-      _ -> false
+    case validate_digest(content, full_digest) do
+      {:ok, _} ->
+        true
+      {:error, _} ->
+        false
     end
   end
 

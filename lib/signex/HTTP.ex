@@ -12,10 +12,6 @@ defmodule SignEx.HTTP do
   - [Specification for the contents of the digest header](https://tools.ietf.org/html/rfc3230)
   - [Sepcification for signing HTTP Messages](https://tools.ietf.org/html/draft-cavage-http-signatures-05)
 
-  ## Examples
-
-      # iex> signature_string([{"date", "Tue, 07 Jun 2014 20:51:35 GMT"}])
-      # "date: Tue, 07 Jun 2014 20:51:35 GMT"
   """
 
   @doc """
@@ -31,7 +27,7 @@ defmodule SignEx.HTTP do
     headers: headers,
     body: body
     }, keypair) do
-      headers_to_sign = [request_target(request) | headers]
+      headers_to_sign = [{"(request-target)", request_target(request)} | headers]
       |> Enum.into(%{})
       case SignEx.sign(body, headers_to_sign, keypair) do
         {:ok, {%{"digest" => digest}, signature_params}} ->
@@ -44,19 +40,42 @@ defmodule SignEx.HTTP do
       end
   end
 
-  def verified?(request = %{
+  def verified?(request, keystore) do
+    case verify(request, keystore) do
+      {:ok, _} ->
+        true
+      {:error, _} ->
+        false
+    end
+  end
+
+
+  def verify(request = %{
     method: _method,
     path: _path,
     headers: headers,
     body: body
     }, keystore) do
-      headers_to_sign = ([request_target(request) | headers] |> Enum.into(%{}))
-      with {:ok, "Signature " <> signature_string} <- Map.fetch(headers_to_sign, "authorization"),
-           {:ok, params} <- SignEx.Parameters.parse(signature_string)
-      do
-        SignEx.verified?(body, headers_to_sign, params, keystore)
-      else
-        _ -> false
+      headers = Enum.into(headers, %{})
+      case Map.fetch(headers, "authorization") do
+        {:ok, "Signature " <> signature_string} ->
+          case SignEx.Parameters.parse(signature_string) do
+            {:ok, parameters} ->
+              request_target = request_target(request)
+              headers = Map.put(headers, "(request-target)", request_target)
+              case SignEx.verify(body, headers, parameters, keystore) do
+                {:ok, _} ->
+                  {:ok, request}
+                {:error, reason} ->
+                  {:error, reason}
+              end
+            {:error, reason} ->
+              {:error, reason}
+          end
+        {:ok, authorization} ->
+          {:error, {:unrecognised_authorization, authorization}}
+        :error ->
+          {:error, :missing_authorization_header}
       end
   end
 
@@ -64,8 +83,10 @@ defmodule SignEx.HTTP do
     method = method |> to_string |> String.downcase
     base = "#{method} #{path}"
     case query_string do
-      "" -> {"(request-target)", base}
-      _ -> {"(request-target)", "#{base}?#{query_string}"}
+      "" ->
+        base
+      _ ->
+        "#{base}?#{query_string}"
     end
   end
 
