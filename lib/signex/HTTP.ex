@@ -45,12 +45,12 @@ defmodule SignEx.HTTP do
   end
 
   def verified?(request, keystore) do
-      case verify(request, keystore) do
-        {:ok, _} ->
-          true
-        {:error, _} ->
-          false
-      end
+    case verify(request, keystore) do
+      {:ok, _} ->
+        true
+      {:error, _} ->
+        false
+    end
   end
 
 
