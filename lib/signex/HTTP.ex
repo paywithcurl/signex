@@ -12,10 +12,6 @@ defmodule SignEx.HTTP do
   - [Specification for the contents of the digest header](https://tools.ietf.org/html/rfc3230)
   - [Sepcification for signing HTTP Messages](https://tools.ietf.org/html/draft-cavage-http-signatures-05)
 
-  ## Examples
-
-      # iex> signature_string([{"date", "Tue, 07 Jun 2014 20:51:35 GMT"}])
-      # "date: Tue, 07 Jun 2014 20:51:35 GMT"
   """
 
   @doc """

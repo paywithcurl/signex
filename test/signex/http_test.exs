@@ -1,6 +1,5 @@
 defmodule SignEx.HTTPTest do
   use ExUnit.Case
-  doctest SignEx.HTTP
 
   setup do
     private_key = File.read!(Path.expand("../../keys/private_key.pem", __ENV__.file))
@@ -51,7 +50,7 @@ defmodule SignEx.HTTPTest do
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
     }
-    signed_request = %{headers: headers} = SignEx.HTTP.sign(request, keypair)
+    signed_request = SignEx.HTTP.sign(request, keypair)
     assert {:ok, ^signed_request} = SignEx.HTTP.verify(signed_request, keypair.public_key)
   end
 
@@ -106,7 +105,7 @@ defmodule SignEx.HTTPTest do
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
     }
-    signed_request = %{headers: headers} = SignEx.HTTP.sign(request, keypair)
+    signed_request = SignEx.HTTP.sign(request, keypair)
     assert {:error, {:key_not_found, _}} = SignEx.HTTP.verify(signed_request, fn(id) -> {:error, {:key_not_found, id}} end)
   end
 
