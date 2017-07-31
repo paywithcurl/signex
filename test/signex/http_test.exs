@@ -30,6 +30,7 @@ defmodule SignEx.HTTPTest do
     request = %{
       method: :POST,
       path: "/some/path",
+      query_string: "",
       query_string: "a=a&b=b",
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
@@ -46,6 +47,7 @@ defmodule SignEx.HTTPTest do
     request = %{
       method: :POST,
       path: "/some/path",
+      query_string: "",
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
     }
@@ -57,6 +59,7 @@ defmodule SignEx.HTTPTest do
     request = %{
       method: :POST,
       path: "/some/path",
+      query_string: "",
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
     }
@@ -69,6 +72,7 @@ defmodule SignEx.HTTPTest do
     request = %{
       method: :POST,
       path: "/some/path",
+      query_string: "",
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
     }
@@ -83,6 +87,7 @@ defmodule SignEx.HTTPTest do
     request = %{
       method: :POST,
       path: "/some/path",
+      query_string: "",
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
     }
@@ -97,6 +102,7 @@ defmodule SignEx.HTTPTest do
     request = %{
       method: :POST,
       path: "/some/path",
+      query_string: "",
       headers: [{"content-type", "application/json"}],
       body: Poison.encode!(%{some: "content"})
     }
