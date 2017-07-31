@@ -31,7 +31,7 @@ defmodule SignEx.HTTP do
     headers: headers,
     body: body
     }, keypair) do
-      headers_to_sign = [request_target(request) | headers]
+      headers_to_sign = [{"(request-target)", request_target(request)} | headers]
       |> Enum.into(%{})
       case SignEx.sign(body, headers_to_sign, keypair) do
         {:ok, {%{"digest" => digest}, signature_params}} ->
@@ -65,8 +65,8 @@ defmodule SignEx.HTTP do
         {:ok, "Signature " <> signature_string} ->
           case SignEx.Parameters.parse(signature_string) do
             {:ok, parameters} ->
-              {k, v} = request_target(request)
-              headers = Map.put(headers, k, v)
+              request_target = request_target(request)
+              headers = Map.put(headers, "(request-target)", request_target)
               case SignEx.verify(body, headers, parameters, keystore) do
                 {:ok, _} ->
                   {:ok, request}
@@ -87,8 +87,10 @@ defmodule SignEx.HTTP do
     method = method |> to_string |> String.downcase
     base = "#{method} #{path}"
     case query_string do
-      "" -> {"(request-target)", base}
-      _ -> {"(request-target)", "#{base}?#{query_string}"}
+      "" ->
+        base
+      _ ->
+        "#{base}?#{query_string}"
     end
   end
 
