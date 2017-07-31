@@ -27,6 +27,7 @@ defmodule SignEx.HTTP do
   def sign(request = %{
     method: _method,
     path: _path,
+    query_string: _query_string,
     headers: headers,
     body: body
     }, keypair) do
@@ -82,9 +83,13 @@ defmodule SignEx.HTTP do
       end
   end
 
-  defp request_target(%{method: method, path: path}) do
-    method = "#{method}" |> String.downcase
-    {"(request-target)", "#{method} #{path}"}
+  defp request_target(%{method: method, path: path, query_string: query_string}) do
+    method = method |> to_string |> String.downcase
+    base = "#{method} #{path}"
+    case query_string do
+      "" -> {"(request-target)", base}
+      _ -> {"(request-target)", "#{base}?#{query_string}"}
+    end
   end
 
   require Logger
