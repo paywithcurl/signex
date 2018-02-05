@@ -11,6 +11,17 @@ defmodule SignEx.Helper do
     :public_key.pem_entry_decode(key_entry)
   end
 
+  def encryption_type(decoded_key) do
+    case decoded_key do
+      {:RSAPublicKey, _, _} ->
+        :rsa
+      {{:ECPoint, _}, {:namedCurve, _curve_tuple}} ->
+        # we could potentially use the curve tuple to make sure
+        # the client is using whatever curve we're expecting (e.g. secp256r1)
+        :ec
+    end
+  end
+
   def generate_salt do
     :crypto.strong_rand_bytes(64) |> Base.encode64
   end

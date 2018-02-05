@@ -49,6 +49,15 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       assert true == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
+    test "enforcing algorithm type works", %{keypair: keypair} do
+      content = "My exiting message!!!"
+      metadata = %{"some-content" => "with-value"}
+      {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
+      assert signature.algorithm == "rsa-sha512"
+      signature = %{signature | algorithm: "ec-sha512"}
+      assert {:error, :invalid_algorithm} == SignEx.verify(content, metadata, signature, keypair.public_key)
+    end
+
     test "verify message with empty body", %{keypair: keypair} do
       content = ""
       metadata = %{"some-content" => "with-value"}
