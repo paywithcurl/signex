@@ -43,14 +43,14 @@ defmodule Mel.InvoiceApprovedConsumerTest do
 
 
     test "verify message with body contents", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       assert true == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
     test "enforcing algorithm type works", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       assert signature.algorithm == "rsa-sha512"
@@ -66,7 +66,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "tampering with the content compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       content = content <> "nefarious"
@@ -74,7 +74,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "tampering with any metadata compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = %{metadata | "some-content" => "new-value"}
@@ -82,7 +82,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "deleting any metadata compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "some-content")
@@ -90,7 +90,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "tampering with the digest compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = %{metadata | "digest" => "SHA-512=some other string"}
@@ -98,7 +98,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "deleting the digest compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "digest")
@@ -107,7 +107,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
 
 
     test "modifiying the signature compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       signature = %{signature | signature: signature.signature <> "extra"}
@@ -115,7 +115,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "metadata must have a string representation", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => {:not_a_string}}
       assert_raise Protocol.UndefinedError, fn() ->
         {:ok, {_metadata, _signature}} = SignEx.sign(content, metadata, keypair)
@@ -133,7 +133,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "verify message with body contents", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       assert true == SignEx.verified?(content, metadata, signature, keypair.public_key)
@@ -147,7 +147,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "deleting the digest compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "digest")
@@ -155,7 +155,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "tampering with the content compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       content = content <> "nefarious"
@@ -163,7 +163,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "tampering with any metadata compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = %{metadata | "some-content" => "new-value"}
@@ -171,7 +171,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
     end
 
     test "deleting any metadata compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       metadata = Map.delete(metadata, "some-content")
@@ -180,7 +180,7 @@ defmodule Mel.InvoiceApprovedConsumerTest do
 
 
     test "modifiying the signature compromises the message", %{keypair: keypair} do
-      content = "My exiting message!!!"
+      content = "My exciting message!!!"
       metadata = %{"some-content" => "with-value"}
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       signature = %{signature | signature: signature.signature <> "extra"}

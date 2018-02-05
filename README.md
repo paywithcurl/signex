@@ -50,7 +50,7 @@ The signature is sent with additional parameters that allow a receiver to check 
 ### Signing generic messages
 
 ```elixir
-content = "My exiting message!!!"
+content = "My exciting message!!!"
 metadata = %{"my-key" => "my-value"}
 {:ok, {metadata_with_digest, signature}} = SignEx.sign(content, metadata, keypair)
 true = SignEx.verified?(content, metadata_with_digest, signature, keypair.public_key)
