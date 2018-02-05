@@ -1,4 +1,4 @@
-defmodule Mel.InvoiceApprovedConsumerTest do
+defmodule SignexTest do
   use ExUnit.Case, async: true
 
   test "signing fails when body not a binary" do
@@ -187,5 +187,70 @@ defmodule Mel.InvoiceApprovedConsumerTest do
       assert false == SignEx.verified?(content, metadata, signature, keypair.public_key)
     end
 
+  end
+
+  describe "message signing" do
+    setup do
+      private_key = File.read!(Path.expand("../keys/ec_private_key.pem", __ENV__.file))
+      public_key = File.read!(Path.expand("../keys/ec_public_key.pem", __ENV__.file))
+      ec_keypair = %{private_key: private_key, public_key: public_key}
+
+      private_key = File.read!(Path.expand("../keys/private_key.pem", __ENV__.file))
+      public_key = File.read!(Path.expand("../keys/public_key.pem", __ENV__.file))
+      rsa_keypair = %{private_key: private_key, public_key: public_key}
+
+      {:ok,
+        ec_keypair: ec_keypair,
+        rsa_keypair: rsa_keypair,
+      }
+    end
+
+    test "signature can be verified", %{ec_keypair: ec_keypair} do
+      original = "Trust is Key"
+      digest = :sha256
+      assert {:ok, {key_id, signature}} = SignEx.sign_message(original, digest, ec_keypair)
+
+      key_id_parts = String.split(key_id, ":")
+      assert Enum.count(key_id_parts) == 16
+      assert Enum.all?(key_id_parts, fn(p) -> String.length(p) == 2 end)
+
+      assert {:ok, :ec} = SignEx.verify_message(original, digest, signature, ec_keypair.public_key)
+    end
+
+    test "changing the original breaks the signature", %{ec_keypair: ec_keypair} do
+      original = "Trust is Key"
+      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+
+      assert {:error, :invalid_signature} = SignEx.verify_message(original <> "X", :sha256, signature, ec_keypair.public_key)
+    end
+
+    test "changing the digest breaks the signature", %{ec_keypair: ec_keypair} do
+      original = "Trust is Key"
+      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+
+      assert {:error, :invalid_signature} = SignEx.verify_message(original, :sha512, signature, ec_keypair.public_key)
+    end
+
+    test "using a different key breaks the signature", %{ec_keypair: ec_keypair, rsa_keypair: rsa_keypair} do
+      original = "Trust is Key"
+      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+
+      assert {:error, :invalid_signature} = SignEx.verify_message(original, :sha256, signature, rsa_keypair.public_key)
+    end
+
+    test "breaking base64 encoding breaks the signature", %{ec_keypair: ec_keypair} do
+      original = "Trust is Key"
+      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+
+      broken_signature = "*()" <> signature
+
+      assert {:error, :invalid_signature_encoding} = SignEx.verify_message(original, :sha256, broken_signature, ec_keypair.public_key)
+    end
+
+    test "specifying an invalid digest returns a neat error", %{ec_keypair: ec_keypair} do
+      original = "Trust is Key"
+      assert {:error, :invalid_digest} = SignEx.sign_message(original, :foo, ec_keypair)
+      assert {:error, :invalid_digest} = SignEx.verify_message(original, :bar, "irrelevant", ec_keypair.public_key)
+    end
   end
 end
