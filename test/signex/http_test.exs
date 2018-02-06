@@ -41,7 +41,7 @@ defmodule SignEx.HTTPTest do
     end)
   end
 
-  test "successful validation", %{keypair: keypair} do
+  test "successful validation with no query string", %{keypair: keypair} do
     request = %{
       method: :POST,
       path: "/some/path",
@@ -51,6 +51,11 @@ defmodule SignEx.HTTPTest do
     }
     signed_request = SignEx.HTTP.sign(request, keypair)
     assert {:ok, ^signed_request} = SignEx.HTTP.verify(signed_request, keypair.public_key)
+
+    request = %{request | query_string: nil}
+    signed_request_nil_qs = SignEx.HTTP.sign(request, keypair)
+    assert {:ok, ^signed_request_nil_qs} = SignEx.HTTP.verify(signed_request_nil_qs, keypair.public_key)
+    assert signed_request.headers == signed_request_nil_qs.headers
   end
 
   test "Missing authorization", %{keypair: keypair} do
