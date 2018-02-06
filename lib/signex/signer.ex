@@ -5,7 +5,7 @@ defmodule SignEx.Signer do
   def sign(data, %{public_key: public_key, private_key: private_key}) do
     algorithm = algorithm_from_key(decode_pem(private_key))
     signing_string = compose_signing_string(data)
-    signature = sign_message(signing_string, private_key, algorithm) |> Base.encode64
+    signature = sign_message(signing_string, private_key, algorithm.digest)
     %SignEx.Parameters{
       key_id: key_id(public_key),
       algorithm: algorithm |> to_string(),
@@ -22,8 +22,8 @@ defmodule SignEx.Signer do
     %Algorithm{encryption: encryption, digest: Algorithm.default_digest()}
   end
 
-  def sign_message(message, private_key, algorithm) do
-    :public_key.sign(message, algorithm.digest, decoded_pem_entry(private_key))
+  def sign_message(message, private_key, digest) do
+    :public_key.sign(message, digest, decoded_pem_entry(private_key)) |> Base.encode64()
   end
 
   defp decoded_pem_entry(private_key) do
