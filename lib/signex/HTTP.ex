@@ -83,7 +83,7 @@ defmodule SignEx.HTTP do
     method = method |> to_string |> String.downcase
     base = "#{method} #{path}"
     case query_string do
-      "" ->
+      none when none in [nil, ""] ->
         base
       _ ->
         "#{base}?#{query_string}"
