@@ -14,12 +14,12 @@ defmodule SignEx.Signer do
     }
   end
 
-  def algorithm_from_key({key_type, _, _}) do
-    encryption = key_type
-    |> to_string
-    |> String.replace("PrivateKey", "")
-    |> String.downcase
-    %Algorithm{encryption: encryption, digest: Algorithm.default_digest()}
+  def algorithm_from_key({:ECPrivateKey, _, _}) do
+    %Algorithm{encryption: :ec, digest: Algorithm.default_digest()}
+  end
+
+  def algorithm_from_key({:RSAPrivateKey, _, _}) do
+    %Algorithm{encryption: :rsa, digest: Algorithm.default_digest()}
   end
 
   def sign_message(message, private_key, digest) do
