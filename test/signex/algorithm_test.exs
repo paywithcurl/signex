@@ -39,4 +39,19 @@ defmodule SignEx.AlgorithmTest do
     assert Algorithm.allowed_digest?("sha512")
     refute Algorithm.allowed_digest?("sha123")
   end
+
+  test "algorithm constructed from key represents the encryption as atom" do
+    [rsa_private_key] =
+      File.read!(Path.expand("../../keys/private_key.pem", __ENV__.file))
+      |> :public_key.pem_decode()
+    [_point, ec_private_key] =
+      File.read!(Path.expand("../../keys/ec_private_key.pem", __ENV__.file))
+      |> :public_key.pem_decode()
+
+    rsa_algorithm = SignEx.Signer.algorithm_from_key(rsa_private_key)
+    assert rsa_algorithm.encryption == :rsa
+
+    ec_algorithm = SignEx.Signer.algorithm_from_key(ec_private_key)
+    assert ec_algorithm.encryption == :ec
+  end
 end
