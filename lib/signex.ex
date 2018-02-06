@@ -7,6 +7,7 @@ defmodule SignEx do
   @digest_algorithm Algorithm.default_digest()
   @allowed_algorithms Algorithm.allowed_strings()
 
+  # TODO rename this to sign_request
   @spec sign(body :: term, metadata :: map, keypair :: map)
     :: {:ok, {metadata :: map, %SignEx.Parameters{}}} | {:error, atom}
   def sign(_body, %{"signature" => _anything}, _keypair) do
@@ -67,6 +68,9 @@ defmodule SignEx do
         false
     end
   end
+
+
+  # TODO rename this to verify_request
   def verify(body, metadata = %{}, params= %SignEx.Parameters{}, keystore) when
       is_binary(body) do
     case fetch_key(keystore, params.key_id) do
@@ -157,12 +161,10 @@ defmodule SignEx do
   @spec sign_message(binary, digest :: atom, keypair :: map)
   :: {:ok, {key_id :: String.t, signature :: String.t}} | {:error, atom}
 
-  def sign_message(message, digest, %{public_key: public_key, private_key: private_key}) do
+  def sign_message(message, digest, %{public_key: _public_key, private_key: private_key}) do
     if digest in Algorithm.available_digests() do
-      true = digest in Algorithm.available_digests()
-      key_id = SignEx.Helper.key_id(public_key)
       signature = SignEx.Signer.sign_message(message, private_key, digest)
-      {:ok, {key_id, signature}}
+      {:ok, signature}
     else
       {:error, :invalid_digest}
     end
@@ -175,9 +177,9 @@ defmodule SignEx do
   def verify_message(message, digest, signature, public_key) do
     if digest in Algorithm.available_digests() do
       case Base.decode64(signature) do
-        {:ok, decoded} ->
+        {:ok, decoded_signature} ->
           decoded_key = Helper.decode_key(public_key)
-          if :public_key.verify(message, digest, decoded, decoded_key) do
+          if :public_key.verify(message, digest, decoded_signature, decoded_key) do
             {:ok, Helper.encryption_type(decoded_key)}
           else
             {:error, :invalid_signature}

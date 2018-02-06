@@ -16,8 +16,8 @@ defmodule SignEx.Helper do
       {:RSAPublicKey, _, _} ->
         :rsa
       {{:ECPoint, _}, {:namedCurve, _curve_tuple}} ->
-        # we could potentially use the curve tuple to make sure
-        # the client is using whatever curve we're expecting (e.g. secp256r1)
+        # NOTE we accept all types of EC curves and treat them all the same.
+        # There could be more strict checking on `curve_tuple` (e.g. for secp256r1)
         :ec
     end
   end

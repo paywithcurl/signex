@@ -208,39 +208,36 @@ defmodule SignexTest do
     test "signature can be verified", %{ec_keypair: ec_keypair} do
       original = "Trust is Key"
       digest = :sha256
-      assert {:ok, {key_id, signature}} = SignEx.sign_message(original, digest, ec_keypair)
 
-      key_id_parts = String.split(key_id, ":")
-      assert Enum.count(key_id_parts) == 16
-      assert Enum.all?(key_id_parts, fn(p) -> String.length(p) == 2 end)
+      assert {:ok, signature} = SignEx.sign_message(original, digest, ec_keypair)
 
       assert {:ok, :ec} = SignEx.verify_message(original, digest, signature, ec_keypair.public_key)
     end
 
     test "changing the original breaks the signature", %{ec_keypair: ec_keypair} do
       original = "Trust is Key"
-      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+      assert {:ok, signature} = SignEx.sign_message(original, :sha256, ec_keypair)
 
       assert {:error, :invalid_signature} = SignEx.verify_message(original <> "X", :sha256, signature, ec_keypair.public_key)
     end
 
     test "changing the digest breaks the signature", %{ec_keypair: ec_keypair} do
       original = "Trust is Key"
-      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+      assert {:ok, signature} = SignEx.sign_message(original, :sha256, ec_keypair)
 
       assert {:error, :invalid_signature} = SignEx.verify_message(original, :sha512, signature, ec_keypair.public_key)
     end
 
     test "using a different key breaks the signature", %{ec_keypair: ec_keypair, rsa_keypair: rsa_keypair} do
       original = "Trust is Key"
-      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+      assert {:ok, signature} = SignEx.sign_message(original, :sha256, ec_keypair)
 
       assert {:error, :invalid_signature} = SignEx.verify_message(original, :sha256, signature, rsa_keypair.public_key)
     end
 
     test "breaking base64 encoding breaks the signature", %{ec_keypair: ec_keypair} do
       original = "Trust is Key"
-      assert {:ok, {_key_id, signature}} = SignEx.sign_message(original, :sha256, ec_keypair)
+      assert {:ok, signature} = SignEx.sign_message(original, :sha256, ec_keypair)
 
       broken_signature = "*()" <> signature
 
