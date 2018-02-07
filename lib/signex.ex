@@ -40,11 +40,16 @@ defmodule SignEx do
         case Helper.fetch_keys(headers, params.headers) do
           {:ok, ordered_headers} ->
             signing_string = Helper.compose_signing_string(ordered_headers)
-            :public_key.verify(signing_string, algorithm.digest, signature, Helper.decode_key(public_key))
-            |> if do
-              {:ok, :valid}
-            else
-              {:error, :signature_incorrect} 
+            decoded_key = Helper.decode_key(public_key)
+            correct_encryption? = algorithm.encryption == Helper.encryption_type(decoded_key)
+            verified? = :public_key.verify(signing_string, algorithm.digest, signature, decoded_key)
+            case {correct_encryption?, verified?} do
+              {false, _} ->
+                {:error, :invalid_algorithm}
+              {_, false} ->
+                {:error, :signature_incorrect}
+              {true, true} ->
+                {:ok, :valid}
             end
           {:error, reason} ->
             {:error, reason}
