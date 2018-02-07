@@ -1,7 +1,14 @@
 defmodule SignEx.Helper do
 
-  def compose_signing_string(data) do
-    data
+  def compose_signing_string(order_of_headers, headers) do
+    case fetch_keys(order_of_headers, headers) do
+      {:ok, ordered_headers} -> {:ok, compose_signing_string(ordered_headers)}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def compose_signing_string(ordered_headers) do
+    ordered_headers
     |> Enum.map(fn({k, v}) -> "#{k}: #{v}" end)
     |> Enum.join("\n")
   end
@@ -39,15 +46,15 @@ defmodule SignEx.Helper do
     :crypto.hash(:md5, key)
   end
 
-  def fetch_keys(collection, keys) do
+  defp fetch_keys(collection, keys) do
     collection = for {k, v} <- collection, do: {k, v}
     do_fetch_keys(collection, keys, [])
   end
 
-  def do_fetch_keys(_collection, [], progress) do
+  defp do_fetch_keys(_collection, [], progress) do
     {:ok, Enum.reverse(progress)}
   end
-  def do_fetch_keys(collection, [key | rest], progress) do
+  defp do_fetch_keys(collection, [key | rest], progress) do
     key = "#{key}"
     case List.keyfind(collection, key, 0) do
       {key, value} ->

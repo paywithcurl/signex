@@ -30,17 +30,17 @@ defmodule SignEx do
     end
   end
   def validate_signature(
-    headers,
+    order_of_headers,
     params = %SignEx.Parameters{algorithm: algorithm_str},
     public_key) when is_binary(public_key) and algorithm_str in @allowed_algorithms
   do
     algorithm = Algorithm.new(algorithm_str)
     case Base.decode64(params.signature) do
       {:ok, signature} ->
-        case Helper.fetch_keys(headers, params.headers) do
-          {:ok, ordered_headers} ->
-            signing_string = Helper.compose_signing_string(ordered_headers)
+        case Helper.compose_signing_string(order_of_headers, params.headers) do
+          {:ok, signing_string} ->
             decoded_key = Helper.decode_key(public_key)
+
             if algorithm.encryption == Helper.encryption_type(decoded_key) do
               if :public_key.verify(signing_string, algorithm.digest, signature, decoded_key) do
                 {:ok, :valid}
