@@ -55,7 +55,7 @@ defmodule SignexTest do
       {:ok, {metadata, signature}} = SignEx.sign(content, metadata, keypair)
       assert signature.algorithm == "rsa-sha512"
       signature = %{signature | algorithm: "ec-sha512"}
-      assert {:error, :invalid_algorithm} == SignEx.verify(content, metadata, signature, keypair.public_key)
+      assert {:error, :incorrect_algorithm_specified} == SignEx.verify(content, metadata, signature, keypair.public_key)
     end
 
     test "verify message with empty body", %{keypair: keypair} do
