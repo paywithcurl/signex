@@ -154,7 +154,7 @@ defmodule SignEx do
 
 
   @spec sign_message(binary, digest :: atom, keypair :: map)
-  :: {:ok, {key_id :: String.t, signature :: String.t}} | {:error, atom}
+  :: {:ok, signature :: String.t} | {:error, atom}
 
   def sign_message(message, digest, %{public_key: _public_key, private_key: private_key}) do
     if digest in Algorithm.available_digests() do
