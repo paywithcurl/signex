@@ -22,7 +22,7 @@ defmodule SignEx.Mixfile do
 
   defp deps do
     [
-      {:poison, "~> 2.0"},
+      {:poison, "~> 2.0 or ~> 4.0"},
       {:plug, "~> 1.0"},
       {:dialyxir, "~> 1.0.0-rc.3", only: [:test, :dev], runtime: false}
     ]
